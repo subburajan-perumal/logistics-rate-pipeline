@@ -1,0 +1,26 @@
+{
+  "rows_in": 20810,
+  "rows_out": 2294,
+  "rows_out_by_carrier": {
+    "AURORA": 150,
+    "BOREALIS": 87,
+    "CORVUS": 88,
+    "DELPHINE": 103,
+    "EVENTIDE": 74,
+    "FATHOM": 1500,
+    "HALCYON": 118,
+    "MERIDIAN": 174
+  },
+  "rejects_total": 66,
+  "rejects_by_reason": {
+    "bad_price": 2,
+    "dates_reversed": 2,
+    "expired_as_of": 6,
+    "same_port": 50,
+    "unknown_container": 2,
+    "unknown_currency": 1,
+    "unknown_port": 3
+  },
+  "dedup_removed": 18450,
+  "sources_failed": 0
+}

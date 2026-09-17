@@ -1,0 +1,247 @@
+{
+  "generated_at": "2026-09-17T07:06:39.3757236Z",
+  "go_version": "go1.27.0",
+  "ingestd_version": "3663789",
+  "recipes_sha256": "002227e30afbe301fc0396faa8d39b1aab6705ec793263a95b99b9aeaf262e92",
+  "runs": [
+    {
+      "workers": 1,
+      "rep": 1,
+      "wall_ms": 6888,
+      "records": 20810,
+      "sources_failed": 0,
+      "peak_rss_mb": 23.668984,
+      "heap_alloc_mb": 2.614672
+    },
+    {
+      "workers": 1,
+      "rep": 2,
+      "wall_ms": 6567,
+      "records": 20810,
+      "sources_failed": 0,
+      "peak_rss_mb": 23.947512,
+      "heap_alloc_mb": 7.141912
+    },
+    {
+      "workers": 1,
+      "rep": 3,
+      "wall_ms": 6850,
+      "records": 20810,
+      "sources_failed": 0,
+      "peak_rss_mb": 23.947512,
+      "heap_alloc_mb": 2.632968
+    },
+    {
+      "workers": 1,
+      "rep": 4,
+      "wall_ms": 6620,
+      "records": 20810,
+      "sources_failed": 0,
+      "peak_rss_mb": 23.955704,
+      "heap_alloc_mb": 2.341176
+    },
+    {
+      "workers": 1,
+      "rep": 5,
+      "wall_ms": 6954,
+      "records": 20810,
+      "sources_failed": 0,
+      "peak_rss_mb": 24.22604,
+      "heap_alloc_mb": 2.541808
+    },
+    {
+      "workers": 2,
+      "rep": 1,
+      "wall_ms": 3768,
+      "records": 20810,
+      "sources_failed": 0,
+      "peak_rss_mb": 24.234232,
+      "heap_alloc_mb": 2.275536
+    },
+    {
+      "workers": 2,
+      "rep": 2,
+      "wall_ms": 3770,
+      "records": 20810,
+      "sources_failed": 0,
+      "peak_rss_mb": 28.428536,
+      "heap_alloc_mb": 3.723544
+    },
+    {
+      "workers": 2,
+      "rep": 3,
+      "wall_ms": 3769,
+      "records": 20810,
+      "sources_failed": 0,
+      "peak_rss_mb": 28.428536,
+      "heap_alloc_mb": 3.745104
+    },
+    {
+      "workers": 2,
+      "rep": 4,
+      "wall_ms": 3770,
+      "records": 20810,
+      "sources_failed": 0,
+      "peak_rss_mb": 28.428536,
+      "heap_alloc_mb": 3.94228
+    },
+    {
+      "workers": 2,
+      "rep": 5,
+      "wall_ms": 3767,
+      "records": 20810,
+      "sources_failed": 0,
+      "peak_rss_mb": 28.428536,
+      "heap_alloc_mb": 4.09396
+    },
+    {
+      "workers": 4,
+      "rep": 1,
+      "wall_ms": 3770,
+      "records": 20810,
+      "sources_failed": 0,
+      "peak_rss_mb": 28.69068,
+      "heap_alloc_mb": 2.75756
+    },
+    {
+      "workers": 4,
+      "rep": 2,
+      "wall_ms": 3770,
+      "records": 20810,
+      "sources_failed": 0,
+      "peak_rss_mb": 28.69068,
+      "heap_alloc_mb": 10.377536
+    },
+    {
+      "workers": 4,
+      "rep": 3,
+      "wall_ms": 3769,
+      "records": 20810,
+      "sources_failed": 0,
+      "peak_rss_mb": 28.69068,
+      "heap_alloc_mb": 8.2482
+    },
+    {
+      "workers": 4,
+      "rep": 4,
+      "wall_ms": 3770,
+      "records": 20810,
+      "sources_failed": 0,
+      "peak_rss_mb": 28.69068,
+      "heap_alloc_mb": 2.908216
+    },
+    {
+      "workers": 4,
+      "rep": 5,
+      "wall_ms": 3769,
+      "records": 20810,
+      "sources_failed": 0,
+      "peak_rss_mb": 28.69068,
+      "heap_alloc_mb": 7.278864
+    },
+    {
+      "workers": 8,
+      "rep": 1,
+      "wall_ms": 3770,
+      "records": 20810,
+      "sources_failed": 0,
+      "peak_rss_mb": 28.69068,
+      "heap_alloc_mb": 7.945576
+    },
+    {
+      "workers": 8,
+      "rep": 2,
+      "wall_ms": 3770,
+      "records": 20810,
+      "sources_failed": 0,
+      "peak_rss_mb": 28.69068,
+      "heap_alloc_mb": 3.003032
+    },
+    {
+      "workers": 8,
+      "rep": 3,
+      "wall_ms": 3769,
+      "records": 20810,
+      "sources_failed": 0,
+      "peak_rss_mb": 28.69068,
+      "heap_alloc_mb": 6.328976
+    },
+    {
+      "workers": 8,
+      "rep": 4,
+      "wall_ms": 3770,
+      "records": 20810,
+      "sources_failed": 0,
+      "peak_rss_mb": 32.884984,
+      "heap_alloc_mb": 3.206632
+    },
+    {
+      "workers": 8,
+      "rep": 5,
+      "wall_ms": 3769,
+      "records": 20810,
+      "sources_failed": 0,
+      "peak_rss_mb": 32.884984,
+      "heap_alloc_mb": 9.294288
+    },
+    {
+      "workers": 16,
+      "rep": 1,
+      "wall_ms": 3770,
+      "records": 20810,
+      "sources_failed": 0,
+      "peak_rss_mb": 32.884984,
+      "heap_alloc_mb": 9.3244
+    },
+    {
+      "workers": 16,
+      "rep": 2,
+      "wall_ms": 3770,
+      "records": 20810,
+      "sources_failed": 0,
+      "peak_rss_mb": 32.884984,
+      "heap_alloc_mb": 9.976448
+    },
+    {
+      "workers": 16,
+      "rep": 3,
+      "wall_ms": 3770,
+      "records": 20810,
+      "sources_failed": 0,
+      "peak_rss_mb": 32.884984,
+      "heap_alloc_mb": 3.730096
+    },
+    {
+      "workers": 16,
+      "rep": 4,
+      "wall_ms": 3769,
+      "records": 20810,
+      "sources_failed": 0,
+      "peak_rss_mb": 32.884984,
+      "heap_alloc_mb": 6.907
+    },
+    {
+      "workers": 16,
+      "rep": 5,
+      "wall_ms": 3773,
+      "records": 20810,
+      "sources_failed": 0,
+      "peak_rss_mb": 32.884984,
+      "heap_alloc_mb": 9.219984
+    }
+  ],
+  "median_wall_ms": {
+    "1": 6850,
+    "16": 3770,
+    "2": 3769,
+    "4": 3770,
+    "8": 3770
+  },
+  "speedup_vs_1": {
+    "1": 1,
+    "16": 1.8169761273209548,
+    "2": 1.8174582117272486,
+    "4": 1.8169761273209548,
+    "8": 1.8169761273209548
+  }
+}

@@ -1,0 +1,105 @@
+{
+  "run_id": "fixture",
+  "started_at": "2026-09-01T00:00:00Z",
+  "finished_at": "2026-09-01T00:00:00Z",
+  "workers": 8,
+  "as_of": "2026-09-01",
+  "sources": {
+    "aurora": {
+      "status": "ok",
+      "records": 150,
+      "pages": 2,
+      "attempts": 2,
+      "retries": 0,
+      "duration_ms": 0,
+      "parts": [
+        "part-000.jsonl.gz"
+      ]
+    },
+    "borealis": {
+      "status": "ok",
+      "records": 90,
+      "pages": 1,
+      "attempts": 1,
+      "retries": 0,
+      "duration_ms": 0,
+      "parts": [
+        "part-000.jsonl.gz"
+      ]
+    },
+    "corvus": {
+      "status": "ok",
+      "records": 90,
+      "pages": 1,
+      "attempts": 1,
+      "retries": 0,
+      "duration_ms": 0,
+      "parts": [
+        "part-000.jsonl.gz"
+      ]
+    },
+    "delphine": {
+      "status": "ok",
+      "records": 105,
+      "pages": 3,
+      "attempts": 5,
+      "retries": 2,
+      "duration_ms": 0,
+      "parts": [
+        "part-000.jsonl.gz"
+      ]
+    },
+    "eventide": {
+      "status": "ok",
+      "records": 75,
+      "pages": 1,
+      "attempts": 1,
+      "retries": 0,
+      "duration_ms": 0,
+      "parts": [
+        "part-000.jsonl.gz"
+      ]
+    },
+    "fathom": {
+      "status": "ok",
+      "records": 20000,
+      "pages": 1,
+      "attempts": 1,
+      "retries": 0,
+      "duration_ms": 0,
+      "parts": [
+        "part-000.jsonl.gz",
+        "part-001.jsonl.gz"
+      ]
+    },
+    "halcyon": {
+      "status": "ok",
+      "records": 120,
+      "pages": 1,
+      "attempts": 1,
+      "retries": 0,
+      "duration_ms": 0,
+      "parts": [
+        "part-000.jsonl.gz"
+      ]
+    },
+    "meridian": {
+      "status": "ok",
+      "records": 180,
+      "pages": 4,
+      "attempts": 4,
+      "retries": 0,
+      "duration_ms": 0,
+      "parts": [
+        "part-000.jsonl.gz"
+      ]
+    }
+  },
+  "totals": {
+    "records": 20810,
+    "sources_ok": 8,
+    "sources_failed": 0
+  },
+  "ingestd_version": "fixture",
+  "recipes_sha256": "002227e30afbe301fc0396faa8d39b1aab6705ec793263a95b99b9aeaf262e92"
+}

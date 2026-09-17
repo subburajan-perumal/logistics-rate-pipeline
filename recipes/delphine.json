@@ -1,0 +1,18 @@
+{
+  "source_id": "delphine",
+  "carrier": "DELPHINE",
+  "url": "${MOCKSOURCES_URL}/delphine/rates",
+  "format": "json",
+  "pagination": {"type": "page", "param": "page", "start": 1, "path": "next_page"},
+  "records_path": "items",
+  "columns": {
+    "origin_raw": "origin", "destination_raw": "destination",
+    "container_type_raw": "equipment", "price_raw": "amount",
+    "currency": "ccy", "unit": "per_container",
+    "valid_from_raw": "valid_from", "valid_to_raw": "valid_to"
+  },
+  "hints": {"decimal_style": "plain", "date_layout": "2006-01-02"},
+  "timeout": "30s",
+  "retry": {"max_attempts": 5, "base_backoff": "200ms", "max_backoff": "3s"},
+  "rate_limit_rps": 20
+}

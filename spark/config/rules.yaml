@@ -1,0 +1,23 @@
+# Reject rules, applied in this order; a row carries only its FIRST reason
+# (docs/PLAN.md §10.3). Disable a rule by setting enabled: false.
+rules:
+  - name: corrupt_json
+    enabled: true
+  - name: bad_price
+    enabled: true
+  - name: unknown_port
+    enabled: true
+  - name: same_port
+    enabled: true
+  - name: unknown_container
+    enabled: true
+  - name: unit_unsupported
+    enabled: true
+  - name: unknown_currency
+    enabled: true
+  - name: bad_dates
+    enabled: true
+  - name: dates_reversed
+    enabled: true
+  - name: expired_as_of
+    enabled: true

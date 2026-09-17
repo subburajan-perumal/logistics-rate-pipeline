@@ -1,0 +1,61 @@
+locode,city,country,aliases
+INMAA,Chennai,IN,Madras
+INNSA,Nhava Sheva,IN,JNPT|Jawaharlal Nehru
+INMUN,Mundra,IN,
+INCOK,Cochin,IN,Kochi
+INVTZ,Visakhapatnam,IN,Vizag
+INKRI,Krishnapatnam,IN,
+INHZA,Hazira,IN,
+INPAV,Pipavav,IN,
+INTUT,Tuticorin,IN,Thoothukudi
+INCCU,Kolkata,IN,Calcutta
+NLRTM,Rotterdam,NL,
+DEHAM,Hamburg,DE,
+BEANR,Antwerp,BE,Antwerpen
+GBFXT,Felixstowe,GB,
+GBSOU,Southampton,GB,
+GBLGP,London Gateway,GB,
+FRLEH,Le Havre,FR,
+ESVLC,Valencia,ES,
+ESBCN,Barcelona,ES,
+ESALG,Algeciras,ES,
+ITGOA,Genoa,IT,Genova
+ITGIT,Gioia Tauro,IT,
+ITSPE,La Spezia,IT,
+GRPIR,Piraeus,GR,
+TRAMR,Ambarli,TR,
+TRMER,Mersin,TR,
+EGPSD,Port Said,EG,
+EGALY,Alexandria,EG,
+MAPTM,Tanger Med,MA,
+AEJEA,Jebel Ali,AE,
+AEKLF,Khalifa Port,AE,Abu Dhabi
+SAJED,Jeddah,SA,
+SADMM,Dammam,SA,
+OMSLL,Salalah,OM,
+QAHMD,Hamad,QA,Doha
+SGSIN,Singapore,SG,
+MYPKG,Port Klang,MY,
+MYTPP,Tanjung Pelepas,MY,
+IDJKT,Jakarta,ID,Tanjung Priok
+THLCH,Laem Chabang,TH,
+VNSGN,Ho Chi Minh City,VN,Saigon|Cat Lai
+VNHPH,Haiphong,VN,
+PHMNL,Manila,PH,
+CNSHA,Shanghai,CN,
+CNNGB,Ningbo,CN,
+CNSZX,Shenzhen,CN,Yantian
+CNTAO,Qingdao,CN,
+HKHKG,Hong Kong,HK,
+KRPUS,Busan,KR,Pusan
+JPTYO,Tokyo,JP,
+JPYOK,Yokohama,JP,
+AUMEL,Melbourne,AU,
+AUSYD,Sydney,AU,
+USNYC,New York,US,NY/NJ|Newark
+USLAX,Los Angeles,US,
+USSAV,Savannah,US,
+USHOU,Houston,US,
+CAVAN,Vancouver,CA,
+BRSSZ,Santos,BR,
+ZADUR,Durban,ZA,

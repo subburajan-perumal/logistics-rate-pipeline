@@ -1,0 +1,17 @@
+{
+  "source_id": "halcyon",
+  "carrier": "HALCYON",
+  "url": "${MOCKSOURCES_URL}/halcyon/tariff.csv",
+  "format": "csv",
+  "columns": {
+    "origin_raw": "Origin", "destination_raw": "Destination",
+    "container_type_raw": "Equipment", "price_raw": "Rate",
+    "currency": "Currency", "unit": "per_container",
+    "valid_from_raw": "ValidFrom", "valid_to_raw": "ValidTo",
+    "surcharges": [{"name": "BAF", "column": "BAF"}]
+  },
+  "hints": {"decimal_style": "eu", "date_layout": "02/01/2006"},
+  "timeout": "20s",
+  "retry": {"max_attempts": 4, "base_backoff": "250ms", "max_backoff": "5s"},
+  "rate_limit_rps": 10
+}
