@@ -1,3 +1,6 @@
+# Demo-only deps (Streamlit Community Cloud reads this file for demo/app.py).
+# No upper bound on pyarrow: Community Cloud may run Python 3.14, and only
+# pyarrow >= 22 ships 3.14 wheels (21 has none and fails to build from source).
 streamlit>=1.40,<2
-pandas>=2.2,<3
-pyarrow>=17,<22
+pandas>=2.2
+pyarrow>=22
