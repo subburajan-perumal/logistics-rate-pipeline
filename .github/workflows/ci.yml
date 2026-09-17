@@ -103,6 +103,7 @@ jobs:
       - run: docker build --target ingestd -t ghcr.io/${{ github.repository }}/ingestd:dev . && docker build --target mocksources -t ghcr.io/${{ github.repository }}/mocksources:dev .
       - uses: helm/kind-action@v1
         with:
+          version: v0.33.0 # spec A13: kind 0.33 → K8s 1.36.1; the action's own default (0.31) writes v1beta3 kubeadm config and cannot start this node image
           cluster_name: rates
           config: deploy/kind/cluster.yaml
       - run: kind load docker-image ghcr.io/${{ github.repository }}/ingestd:dev ghcr.io/${{ github.repository }}/mocksources:dev --name rates
