@@ -8,6 +8,8 @@ a rate matrix in **Redshift** / Delta, with the Go service packaged as a
 
 Built to a frozen spec — `docs/PLAN.md` — with an append-only Decision Log.
 
+**See it:** [results page](https://subburajan-perumal.github.io/logistics-rate-pipeline/) (rendered from `bench/results/` by `scripts/render_results.py`) · [live rate-matrix explorer](https://logistics-rate-pipeline.streamlit.app) (Streamlit over one committed run's output in `demo/data/`; may take a minute to wake).
+
 ## Numbers (committed under `bench/results/`)
 
 | what | result | evidence |
