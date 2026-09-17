@@ -21,3 +21,4 @@ coverage.out
 bin/
 *.test
 *.test.exe
+!demo/data/
