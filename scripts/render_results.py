@@ -58,7 +58,7 @@ def load_parse() -> dict:
             rows[m.group(1)] = {
                 "before": int(m.group(2).replace(" ", "")),
                 "after": int(m.group(3).replace(" ", "")),
-                "change": m.group(4).strip(),
+                "change": m.group(4).strip().strip("*"),
             }
     if len(rows) != 3:
         raise SystemExit("parse.md table not found")
@@ -72,7 +72,8 @@ def load_normalize() -> dict:
 def bar_chart(items: list[tuple[str, float, str]], unit: str, width: int = 560) -> str:
     """Horizontal bar chart as inline SVG. items = (label, value, note)."""
     top = max(v for _, v, _ in items) or 1
-    row_h, label_w, pad = 30, 130, 8
+    row_h, pad = 30, 8
+    label_w = 8 + max(len(label) for label, _, _ in items) * 8  # ~8 px per char at 13 px
     h = row_h * len(items) + pad
     parts = [f'<svg viewBox="0 0 {width} {h}" width="100%" role="img" aria-label="bar chart">']
     for i, (label, value, note) in enumerate(items):
@@ -147,7 +148,7 @@ body {{ margin:0; background:var(--bg); color:var(--fg); font:16px/1.55 system-u
 main {{ max-width:960px; margin:0 auto; padding:32px 16px 64px; }}
 h1 {{ font-size:1.7rem; margin:0 0 4px; }} h2 {{ font-size:1.2rem; margin:40px 0 8px; }}
 p.lead, .muted {{ color:var(--muted); }}
-.links a {{ margin-right:16px; }}
+a {{ color:var(--bar); }} .links a {{ margin-right:16px; }}
 .grid {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; margin:20px 0; }}
 .stat {{ background:var(--card); border:1px solid var(--line); border-radius:8px; padding:14px 16px; }}
 .stat b {{ display:block; font-size:1.5rem; }} .stat span {{ color:var(--muted); font-size:.9rem; }}
