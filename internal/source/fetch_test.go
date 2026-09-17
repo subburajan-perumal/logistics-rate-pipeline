@@ -81,7 +81,7 @@ func TestRetrySchedule5xxThenSuccess(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	r.Body.Close()
+	defer r.Body.Close()
 	if st.Attempts != 4 || st.Retries != 3 {
 		t.Fatalf("stats=%+v", st)
 	}
@@ -101,7 +101,10 @@ func TestRetryExhausted(t *testing.T) {
 	sc := &script{responses: []*http.Response{resp(500, nil), resp(500, nil), resp(500, nil), resp(500, nil)}}
 	f, _ := newFetcher(t, sc, rc(t))
 	var st Stats
-	_, err := f.Get(context.Background(), "http://h/feed", &st)
+	r, err := f.Get(context.Background(), "http://h/feed", &st)
+	if r != nil {
+		defer r.Body.Close()
+	}
 	if err == nil || !strings.Contains(err.Error(), "after 4 attempts") {
 		t.Fatalf("err=%v", err)
 	}
@@ -111,10 +114,8 @@ func TestRetryExhausted(t *testing.T) {
 }
 
 func TestRetryAfterSecondsAndDate(t *testing.T) {
-	sc := &script{responses: []*http.Response{
-		resp(429, map[string]string{"Retry-After": "2"}),
-		resp(429, map[string]string{"Retry-After": "Tue, 01 Sep 2026 00:00:07 GMT"}),
-		resp(200, nil)}}
+	retryAfter := func(v string) map[string]string { return map[string]string{"Retry-After": v} }
+	sc := &script{responses: []*http.Response{resp(429, retryAfter("2")), resp(429, retryAfter("Tue, 01 Sep 2026 00:00:07 GMT")), resp(200, nil)}}
 	f, clock := newFetcher(t, sc, rc(t))
 	var st Stats
 	r, err := f.Get(context.Background(), "http://h/feed", &st)

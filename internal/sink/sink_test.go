@@ -30,6 +30,15 @@ func rec(i int) *record.RawRecord {
 	return r
 }
 
+func mustWrite(t *testing.T, w Writer, recs ...*record.RawRecord) {
+	t.Helper()
+	for _, r := range recs {
+		if err := w.Write(r); err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
 func manifest() *record.Manifest {
 	return &record.Manifest{RunID: "r1", StartedAt: time.Unix(0, 0).UTC(), FinishedAt: time.Unix(1, 0).UTC(), Workers: 1,
 		Sources: map[string]record.SourceReport{"s": {Status: "ok", Records: 3, Parts: []string{"part-000.jsonl.gz"}}},
@@ -99,8 +108,7 @@ func TestFSAbortLeavesNothingAndGC(t *testing.T) {
 	s, _ := NewFS(root)
 	s.MaxRecordsPerPart = 1
 	w, _ := s.Open(context.Background(), "r1", "s")
-	w.Write(rec(0))
-	w.Write(rec(1))
+	mustWrite(t, w, rec(0), rec(1))
 	if err := w.Abort(context.Background()); err != nil {
 		t.Fatal(err)
 	}
@@ -109,10 +117,11 @@ func TestFSAbortLeavesNothingAndGC(t *testing.T) {
 	}
 	// GC removes stale temp files only
 	w2, _ := s.Open(context.Background(), "r2", "s")
-	w2.Write(rec(0))
-	w2.Write(rec(1))
+	mustWrite(t, w2, rec(0), rec(1))
 	stale := filepath.Join(root, "runs", "run_id=r2", "source=s", "part-000.jsonl.gz.tmp")
-	os.Chtimes(stale, time.Now().Add(-48*time.Hour), time.Now().Add(-48*time.Hour))
+	if err := os.Chtimes(stale, time.Now().Add(-48*time.Hour), time.Now().Add(-48*time.Hour)); err != nil {
+		t.Fatal(err)
+	}
 	n, err := s.GC(context.Background(), 24*time.Hour)
 	if err != nil || n != 1 {
 		t.Fatalf("gc n=%d err=%v", n, err)
@@ -176,9 +185,7 @@ func TestS3PromoteOnClose(t *testing.T) {
 		t.Fatal(err)
 	}
 	w, _ := s.Open(context.Background(), "r1", "s")
-	for i := 0; i < 3; i++ {
-		w.Write(rec(i))
-	}
+	mustWrite(t, w, rec(0), rec(1), rec(2))
 	if keys := list("pfx/_tmp/"); len(keys) != 1 {
 		t.Fatalf("expected one temp part before close, got %v", keys)
 	}
@@ -217,8 +224,7 @@ func TestS3AbortAndGC(t *testing.T) {
 	s := NewS3(client, "rates", "")
 	s.MaxRecordsPerPart = 1
 	w, _ := s.Open(context.Background(), "r1", "s")
-	w.Write(rec(0))
-	w.Write(rec(1))
+	mustWrite(t, w, rec(0), rec(1))
 	if err := w.Abort(context.Background()); err != nil {
 		t.Fatal(err)
 	}
@@ -226,8 +232,7 @@ func TestS3AbortAndGC(t *testing.T) {
 		t.Fatalf("abort left %v", keys)
 	}
 	w2, _ := s.Open(context.Background(), "r2", "s")
-	w2.Write(rec(0))
-	w2.Write(rec(1))
+	mustWrite(t, w2, rec(0), rec(1))
 	n, err := s.GC(context.Background(), 0)
 	if err != nil || n != 2 { // two writes at one record per part = two temp objects
 		t.Fatalf("gc n=%d err=%v keys=%v", n, err, list(""))

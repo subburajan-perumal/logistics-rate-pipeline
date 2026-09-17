@@ -124,7 +124,7 @@ func TestRunAllSourcesWorkersEquivalence(t *testing.T) {
 }
 
 func TestFailingSourceIsDataNotError(t *testing.T) {
-	set, ts := env(t, true)
+	_, ts := env(t, true)
 	t.Setenv("EVENTIDE_API_KEY", "wrong") // eventide → 401 → non-retryable → failed
 	set, err := recipe.Load(filepath.Join("..", "..", "recipes"))
 	if err != nil {
@@ -200,12 +200,15 @@ func TestCancelMidRunWritesNoManifestAndNoParts(t *testing.T) {
 		t.Fatal("cancelled run must not write a manifest")
 	}
 	var promoted []string
-	filepath.WalkDir(root, func(p string, d os.DirEntry, _ error) error {
+	err = filepath.WalkDir(root, func(p string, d os.DirEntry, _ error) error {
 		if d != nil && !d.IsDir() && strings.HasSuffix(p, ".jsonl.gz") {
 			promoted = append(promoted, p)
 		}
 		return nil
 	})
+	if err != nil {
+		t.Fatal(err)
+	}
 	if len(promoted) != 0 {
 		t.Fatalf("cancelled run promoted parts: %v", promoted)
 	}

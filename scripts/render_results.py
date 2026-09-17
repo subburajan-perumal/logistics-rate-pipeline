@@ -164,7 +164,7 @@ code {{ background:var(--card); border:1px solid var(--line); border-radius:4px;
 <main>
 <h1>logistics-rate-pipeline — measured results</h1>
 <p class="lead">Eight synthetic ocean-freight rate feeds → a concurrent <b>Go</b> ingestion service (bounded worker pool, retries, graceful shutdown, Prometheus/pprof) → a <b>PySpark</b> normalizer producing a rate matrix with named reject rules. All feeds are invented; the engineering is the point.</p>
-<p class="links"><a href="{REPO}">Code</a> <a href="{DEMO}">Live rate-matrix explorer</a> <a href="{REPO}/tree/main/bench/results">Raw result files</a> <a href="{REPO}/blob/main/docs/PLAN.md">Frozen spec &amp; decision log</a></p>
+<p class="links"><a href="{REPO}">Code</a> <a href="{DEMO}">Live rate-matrix explorer</a> <a href="{REPO}/tree/main/bench/results">Raw result files</a> <a href="{REPO}/blob/main/docs/PLAN.md">Frozen spec &amp; decision log</a> <a href="{REPO}/actions/workflows/ci.yml"><img alt="ci: go test -race + goleak, golangci-lint, PySpark tests, helm/kubeconform" src="{REPO}/actions/workflows/ci.yml/badge.svg" style="vertical-align:middle"></a></p>
 
 <div class="grid">
   <div class="stat"><b>{best['speedup']:.2f}×</b><span>worker pool vs. sequential ({pool[0]['median_s']:.2f} s → {best['median_s']:.2f} s)</span></div>

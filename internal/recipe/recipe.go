@@ -229,7 +229,7 @@ func Parse(b []byte) (Recipe, error) {
 	if err := dec.Decode(&r); err != nil {
 		return r, fmt.Errorf("decode: %w", err)
 	}
-	r.URL = os.Expand(r.URL, func(k string) string { return os.Getenv(k) })
+	r.URL = os.Expand(r.URL, os.Getenv)
 	if err := r.Validate(); err != nil {
 		return r, err
 	}

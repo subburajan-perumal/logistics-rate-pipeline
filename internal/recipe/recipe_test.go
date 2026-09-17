@@ -58,7 +58,7 @@ func TestValidationErrorsNameTheField(t *testing.T) {
 		`"rate_limit_rps":-1`:                              "rate_limit_rps",
 	}
 	for override, field := range cases {
-		key := override[:strings.Index(override, ":")]
+		key, _, _ := strings.Cut(override, ":")
 		base := minimal()
 		// replace or add the key
 		var doc string
@@ -85,14 +85,18 @@ func TestUnknownFieldRejected(t *testing.T) {
 
 func TestLoadRejectsDuplicateAndInvalid(t *testing.T) {
 	dir := t.TempDir()
-	os.WriteFile(filepath.Join(dir, "a.json"), []byte(minimal()), 0o644)
-	os.WriteFile(filepath.Join(dir, "b.json"), []byte(minimal()), 0o644)
-	os.WriteFile(filepath.Join(dir, "schema.json"), []byte(`{"$schema":"x"}`), 0o644)
+	for name, body := range map[string]string{"a.json": minimal(), "b.json": minimal(), "schema.json": `{"$schema":"x"}`} {
+		if err := os.WriteFile(filepath.Join(dir, name), []byte(body), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
 	_, err := Load(dir)
 	if err == nil || !strings.Contains(err.Error(), "duplicate source_id") {
 		t.Fatalf("got %v", err)
 	}
-	os.WriteFile(filepath.Join(dir, "b.json"), []byte(`{"source_id":"y"}`), 0o644)
+	if err := os.WriteFile(filepath.Join(dir, "b.json"), []byte(`{"source_id":"y"}`), 0o644); err != nil {
+		t.Fatal(err)
+	}
 	_, err = Load(dir)
 	if err == nil || !strings.Contains(err.Error(), "b.json") {
 		t.Fatalf("got %v", err)

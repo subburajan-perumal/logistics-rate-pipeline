@@ -8,5 +8,11 @@ linters:
         - (*os.File).Close
         - (io.Closer).Close
         - (net/http.ResponseWriter).Write
+  exclusions:
+    rules:
+      # fetch_test feeds canned *http.Response fakes to the Fetcher under test,
+      # which owns and closes them; bodyclose cannot see through the RoundTripper.
+      - path: internal/source/fetch_test\.go
+        linters: [bodyclose]
 formatters:
   enable: [gofmt]

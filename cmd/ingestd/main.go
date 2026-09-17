@@ -25,6 +25,7 @@ import (
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
 
 	"github.com/subburajan-perumal/logistics-rate-pipeline/internal/metrics"
 	"github.com/subburajan-perumal/logistics-rate-pipeline/internal/pool"
@@ -155,7 +156,7 @@ func cmdServe(args []string) error {
 	defer stop()
 
 	reg := prometheus.NewRegistry()
-	reg.MustRegister(prometheus.NewGoCollector(), prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}))
+	reg.MustRegister(collectors.NewGoCollector(), collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
 	m := metrics.New(reg)
 
 	set, rerr := recipe.Load(c.recipes)

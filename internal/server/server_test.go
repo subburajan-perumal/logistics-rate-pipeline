@@ -109,7 +109,9 @@ func TestRunLifecycleAndMetrics(t *testing.T) {
 		t.Fatalf("status=%d", resp.StatusCode)
 	}
 	var st RunState
-	json.NewDecoder(resp.Body).Decode(&st)
+	if err := json.NewDecoder(resp.Body).Decode(&st); err != nil {
+		t.Fatal(err)
+	}
 	resp.Body.Close()
 	if st.Status != "running" || st.Workers != 4 {
 		t.Fatalf("st=%+v", st)
@@ -144,7 +146,9 @@ func TestCancelViaAPI(t *testing.T) {
 	s.SetReady(nil)
 	resp, _ := http.Post(api+"/runs", "application/json", nil)
 	var st RunState
-	json.NewDecoder(resp.Body).Decode(&st)
+	if err := json.NewDecoder(resp.Body).Decode(&st); err != nil {
+		t.Fatal(err)
+	}
 	resp.Body.Close()
 	req, _ := http.NewRequest(http.MethodDelete, api+"/runs/"+st.RunID, nil)
 	r2, err := http.DefaultClient.Do(req)

@@ -30,7 +30,7 @@ code { background:var(--card); border:1px solid var(--line); border-radius:4px; 
 <main>
 <h1>logistics-rate-pipeline — measured results</h1>
 <p class="lead">Eight synthetic ocean-freight rate feeds → a concurrent <b>Go</b> ingestion service (bounded worker pool, retries, graceful shutdown, Prometheus/pprof) → a <b>PySpark</b> normalizer producing a rate matrix with named reject rules. All feeds are invented; the engineering is the point.</p>
-<p class="links"><a href="https://github.com/subburajan-perumal/logistics-rate-pipeline">Code</a> <a href="https://logistics-rate-pipeline.streamlit.app">Live rate-matrix explorer</a> <a href="https://github.com/subburajan-perumal/logistics-rate-pipeline/tree/main/bench/results">Raw result files</a> <a href="https://github.com/subburajan-perumal/logistics-rate-pipeline/blob/main/docs/PLAN.md">Frozen spec &amp; decision log</a></p>
+<p class="links"><a href="https://github.com/subburajan-perumal/logistics-rate-pipeline">Code</a> <a href="https://logistics-rate-pipeline.streamlit.app">Live rate-matrix explorer</a> <a href="https://github.com/subburajan-perumal/logistics-rate-pipeline/tree/main/bench/results">Raw result files</a> <a href="https://github.com/subburajan-perumal/logistics-rate-pipeline/blob/main/docs/PLAN.md">Frozen spec &amp; decision log</a> <a href="https://github.com/subburajan-perumal/logistics-rate-pipeline/actions/workflows/ci.yml"><img alt="ci: go test -race + goleak, golangci-lint, PySpark tests, helm/kubeconform" src="https://github.com/subburajan-perumal/logistics-rate-pipeline/actions/workflows/ci.yml/badge.svg" style="vertical-align:middle"></a></p>
 
 <div class="grid">
   <div class="stat"><b>1.82×</b><span>worker pool vs. sequential (6.85 s → 3.77 s)</span></div>

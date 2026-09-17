@@ -103,12 +103,18 @@ func cmdDump(args []string) error {
 	if err != nil {
 		return err
 	}
-	ts.Listener.Close()
+	if err := ts.Listener.Close(); err != nil {
+		return err
+	}
 	ts.Listener = ln
 	ts.Start()
 	defer ts.Close()
-	os.Setenv("MOCKSOURCES_URL", ts.URL)
-	os.Setenv("EVENTIDE_API_KEY", "eventide-demo-key")
+	if err := os.Setenv("MOCKSOURCES_URL", ts.URL); err != nil {
+		return err
+	}
+	if err := os.Setenv("EVENTIDE_API_KEY", "eventide-demo-key"); err != nil {
+		return err
+	}
 
 	set, err := recipe.Load(*recipesDir)
 	if err != nil {

@@ -45,7 +45,7 @@ func Parse(ctx context.Context, body io.Reader, opts Options, emit Emit) (Result
 		if err != nil {
 			return Result{}, fmt.Errorf("gzip: %w", err)
 		}
-		defer gz.Close()
+		defer func() { _ = gz.Close() }() // gzip.Reader.Close never fails on a fully-read stream; nothing to do with it
 		body = gz
 	}
 	switch opts.Recipe.Format {

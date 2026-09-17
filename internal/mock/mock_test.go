@@ -50,7 +50,11 @@ func TestDeterministicAcrossInstances(t *testing.T) {
 func TestEventideRequiresKey(t *testing.T) {
 	ts := httptest.NewServer(NewServer(Config{LatencyScale: 0}).Handler())
 	defer ts.Close()
-	resp, _ := http.Get(ts.URL + "/eventide/rates")
+	resp, err := http.Get(ts.URL + "/eventide/rates")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resp.Body.Close()
 	if resp.StatusCode != 401 {
 		t.Fatal(resp.StatusCode)
 	}

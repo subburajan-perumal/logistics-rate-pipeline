@@ -1,5 +1,7 @@
 # logistics-rate-pipeline
 
+[![ci](https://github.com/subburajan-perumal/logistics-rate-pipeline/actions/workflows/ci.yml/badge.svg)](https://github.com/subburajan-perumal/logistics-rate-pipeline/actions/workflows/ci.yml)
+
 Eight synthetic ocean-freight rate feeds → a concurrent **Go** ingestion
 service → atomic runs in S3 (or a PVC) → a **PySpark** normalization job →
 a rate matrix in **Redshift** / Delta, with the Go service packaged as a

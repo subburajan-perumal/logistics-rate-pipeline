@@ -103,11 +103,19 @@ func TestParseNumberStyles(t *testing.T) {
 func TestGzipCSVStreams(t *testing.T) {
 	var buf bytes.Buffer
 	gz := gzip.NewWriter(&buf)
-	gz.Write([]byte("Origin,Destination,Equipment,Rate,Currency,BAF,ValidFrom,ValidTo\n"))
-	for i := 0; i < 5000; i++ {
-		gz.Write([]byte("A,B,20GP,\"1.000,00\",EUR,\"1,00\",x,y\n"))
+	write := func(s string) {
+		t.Helper()
+		if _, err := gz.Write([]byte(s)); err != nil {
+			t.Fatal(err)
+		}
 	}
-	gz.Close()
+	write("Origin,Destination,Equipment,Rate,Currency,BAF,ValidFrom,ValidTo\n")
+	for i := 0; i < 5000; i++ {
+		write("A,B,20GP,\"1.000,00\",EUR,\"1,00\",x,y\n")
+	}
+	if err := gz.Close(); err != nil {
+		t.Fatal(err)
+	}
 	rc := csvRecipe(t)
 	rc.Compression = "gzip"
 	n := 0
