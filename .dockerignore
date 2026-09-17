@@ -1,0 +1,10 @@
+.git
+bin/
+bench/
+data/
+deploy/
+docs/
+spark/
+tests/
+*.md
+.env*

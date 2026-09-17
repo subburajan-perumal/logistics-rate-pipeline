@@ -1,0 +1,289 @@
+== rate_matrix physical plan (formatted)
+== Physical Plan ==
+AdaptiveSparkPlan (61)
++- Project (60)
+   +- Filter (59)
+      +- Window (58)
+         +- WindowGroupLimit (57)
+            +- Sort (56)
+               +- Exchange (55)
+                  +- WindowGroupLimit (54)
+                     +- Sort (53)
+                        +- Project (52)
+                           +- BroadcastHashJoin LeftOuter BuildRight (51)
+                              :- Project (46)
+                              :  +- Project (45)
+                              :     +- Filter (44)
+                              :        +- BroadcastHashJoin LeftOuter BuildRight (43)
+                              :           :- Project (38)
+                              :           :  +- BroadcastHashJoin LeftOuter BuildRight (37)
+                              :           :     :- Project (32)
+                              :           :     :  +- BroadcastHashJoin LeftOuter BuildRight (31)
+                              :           :     :     :- Project (26)
+                              :           :     :     :  +- BroadcastHashJoin LeftOuter BuildRight (25)
+                              :           :     :     :     :- Project (14)
+                              :           :     :     :     :  +- BroadcastHashJoin LeftOuter BuildRight (13)
+                              :           :     :     :     :     :- Project (2)
+                              :           :     :     :     :     :  +- Scan json  (1)
+                              :           :     :     :     :     +- BroadcastExchange (12)
+                              :           :     :     :     :        +- SortAggregate (11)
+                              :           :     :     :     :           +- Sort (10)
+                              :           :     :     :     :              +- Exchange (9)
+                              :           :     :     :     :                 +- SortAggregate (8)
+                              :           :     :     :     :                    +- Sort (7)
+                              :           :     :     :     :                       +- Project (6)
+                              :           :     :     :     :                          +- Filter (5)
+                              :           :     :     :     :                             +- Generate (4)
+                              :           :     :     :     :                                +- Scan csv  (3)
+                              :           :     :     :     +- BroadcastExchange (24)
+                              :           :     :     :        +- SortAggregate (23)
+                              :           :     :     :           +- Sort (22)
+                              :           :     :     :              +- Exchange (21)
+                              :           :     :     :                 +- SortAggregate (20)
+                              :           :     :     :                    +- Sort (19)
+                              :           :     :     :                       +- Project (18)
+                              :           :     :     :                          +- Filter (17)
+                              :           :     :     :                             +- Generate (16)
+                              :           :     :     :                                +- Scan csv  (15)
+                              :           :     :     +- BroadcastExchange (30)
+                              :           :     :        +- Project (29)
+                              :           :     :           +- Filter (28)
+                              :           :     :              +- Scan csv  (27)
+                              :           :     +- BroadcastExchange (36)
+                              :           :        +- Project (35)
+                              :           :           +- Filter (34)
+                              :           :              +- Scan csv  (33)
+                              :           +- BroadcastExchange (42)
+                              :              +- Project (41)
+                              :                 +- Filter (40)
+                              :                    +- Scan csv  (39)
+                              +- BroadcastExchange (50)
+                                 +- Project (49)
+                                    +- Filter (48)
+                                       +- Scan csv  (47)
+(1) Scan json 
+Output [16]: [run_id#112, source_id#113, carrier#114, fetched_at#115, origin_raw#118, destination_raw#119, container_type_raw#120, price_raw#121, price#122, currency#123, unit#124, valid_from_raw#125, valid_to_raw#126, surcharges#127, record_hash#129, _corrupt#130]
+Batched: false
+Location: InMemoryFileIndex [file:/D:/projects/logistics-rate-pipeline/spark/tests/fixtures/raw/runs/run_id=fixture/source=aurora/part-000.jsonl.gz, ... 8 entries]
+ReadSchema: struct<run_id:string,source_id:string,carrier:string,fetched_at:timestamp,origin_raw:string,destination_raw:string,container_type_raw:string,price_raw:string,price:double,currency:string,unit:string,valid_from_raw:string,valid_to_raw:string,surcharges:array<struct<name:string,amount_raw:string,amount:double>>,record_hash:string,_corrupt:string>
+(2) Project
+Output [15]: [run_id#112, source_id#113, carrier#114, fetched_at#115, unit#124, surcharges#127, record_hash#129, _corrupt#130, coalesce(price#122, try_cast(CASE WHEN RLIKE(trim(price_raw#121, None), ^-?\d{1,3}(\.\d{3})*(,\d+)?$|^-?\d+,\d+$) THEN regexp_replace(regexp_replace(trim(price_raw#121, None), \., , 1), ,, ., 1) ELSE regexp_replace(regexp_replace(trim(price_raw#121, None), ,, , 1), ^\$, , 1) END as double)) AS price_parsed#132, coalesce(cast(gettimestamp(trim(valid_from_raw#125, None), yyyy-MM-dd, TimestampType, try_to_timestamp, Some(Asia/Calcutta), false) as date), cast(gettimestamp(trim(valid_from_raw#125, None), dd/MM/yyyy, TimestampType, try_to_timestamp, Some(Asia/Calcutta), false) as date), cast(gettimestamp(trim(valid_from_raw#125, None), dd-MMM-yyyy, TimestampType, try_to_timestamp, Some(Asia/Calcutta), false) as date), cast(gettimestamp(trim(valid_from_raw#125, None), yyyy/MM/dd, TimestampType, try_to_timestamp, Some(Asia/Calcutta), false) as date)) AS valid_from#133, coalesce(cast(gettimestamp(trim(valid_to_raw#126, None), yyyy-MM-dd, TimestampType, try_to_timestamp, Some(Asia/Calcutta), false) as date), cast(gettimestamp(trim(valid_to_raw#126, None), dd/MM/yyyy, TimestampType, try_to_timestamp, Some(Asia/Calcutta), false) as date), cast(gettimestamp(trim(valid_to_raw#126, None), dd-MMM-yyyy, TimestampType, try_to_timestamp, Some(Asia/Calcutta), false) as date), cast(gettimestamp(trim(valid_to_raw#126, None), yyyy/MM/dd, TimestampType, try_to_timestamp, Some(Asia/Calcutta), false) as date)) AS valid_to#134, upper(trim(origin_raw#118, None)) AS origin_key#135, upper(trim(destination_raw#119, None)) AS destination_key#136, upper(trim(container_type_raw#120, None)) AS container_key#137, upper(trim(currency#123, None)) AS currency_key#138]
+Input [16]: [run_id#112, source_id#113, carrier#114, fetched_at#115, origin_raw#118, destination_raw#119, container_type_raw#120, price_raw#121, price#122, currency#123, unit#124, valid_from_raw#125, valid_to_raw#126, surcharges#127, record_hash#129, _corrupt#130]
+(3) Scan csv 
+Output [3]: [locode#17, city#18, aliases#20]
+Batched: false
+Location: InMemoryFileIndex [file:/D:/projects/logistics-rate-pipeline/spark/config/ports.csv]
+ReadSchema: struct<locode:string,city:string,aliases:string>
+(4) Generate
+Input [3]: [locode#17, city#18, aliases#20]
+Arguments: explode(array_union(array(locode#17, city#18), split(coalesce(aliases#20, ), \|, -1))), [locode#17], false, [key#22]
+(5) Filter
+Input [2]: [locode#17, key#22]
+Condition : ((isnotnull(key#22) AND NOT (key#22 = )) AND isnotnull(upper(trim(key#22, None))))
+(6) Project
+Output [2]: [upper(trim(key#22, None)) AS key#24, locode#17]
+Input [2]: [locode#17, key#22]
+(7) Sort
+Input [2]: [key#24, locode#17]
+Arguments: [key#24 ASC NULLS FIRST], false, 0
+(8) SortAggregate
+Input [2]: [key#24, locode#17]
+Keys [1]: [key#24]
+Functions [1]: [partial_first(locode#17, false)]
+Aggregate Attributes [2]: [first#172, valueSet#173]
+Results [3]: [key#24, first#174, valueSet#175]
+(9) Exchange
+Input [3]: [key#24, first#174, valueSet#175]
+Arguments: hashpartitioning(key#24, 8), ENSURE_REQUIREMENTS, [plan_id=257]
+(10) Sort
+Input [3]: [key#24, first#174, valueSet#175]
+Arguments: [key#24 ASC NULLS FIRST], false, 0
+(11) SortAggregate
+Input [3]: [key#24, first#174, valueSet#175]
+Keys [1]: [key#24]
+Functions [1]: [first(locode#17, false)]
+Aggregate Attributes [1]: [first(locode#17)()#168]
+Results [2]: [key#24 AS origin_key#140, first(locode#17)()#168 AS origin_locode#139]
+(12) BroadcastExchange
+Input [2]: [origin_key#140, origin_locode#139]
+Arguments: HashedRelationBroadcastMode(List(input[0, string, true]),false), [plan_id=261]
+(13) BroadcastHashJoin
+Left keys [1]: [origin_key#135]
+Right keys [1]: [origin_key#140]
+Join type: LeftOuter
+Join condition: None
+(14) Project
+Output [15]: [run_id#112, source_id#113, carrier#114, fetched_at#115, unit#124, surcharges#127, record_hash#129, _corrupt#130, price_parsed#132, valid_from#133, valid_to#134, destination_key#136, container_key#137, currency_key#138, origin_locode#139]
+Input [17]: [run_id#112, source_id#113, carrier#114, fetched_at#115, unit#124, surcharges#127, record_hash#129, _corrupt#130, price_parsed#132, valid_from#133, valid_to#134, origin_key#135, destination_key#136, container_key#137, currency_key#138, origin_key#140, origin_locode#139]
+(15) Scan csv 
+Output [3]: [locode#143, city#144, aliases#146]
+Batched: false
+Location: InMemoryFileIndex [file:/D:/projects/logistics-rate-pipeline/spark/config/ports.csv]
+ReadSchema: struct<locode:string,city:string,aliases:string>
+(16) Generate
+Input [3]: [locode#143, city#144, aliases#146]
+Arguments: explode(array_union(array(locode#143, city#144), split(coalesce(aliases#146, ), \|, -1))), [locode#143], false, [key#147]
+(17) Filter
+Input [2]: [locode#143, key#147]
+Condition : ((isnotnull(key#147) AND NOT (key#147 = )) AND isnotnull(upper(trim(key#147, None))))
+(18) Project
+Output [2]: [upper(trim(key#147, None)) AS key#148, locode#143]
+Input [2]: [locode#143, key#147]
+(19) Sort
+Input [2]: [key#148, locode#143]
+Arguments: [key#148 ASC NULLS FIRST], false, 0
+(20) SortAggregate
+Input [2]: [key#148, locode#143]
+Keys [1]: [key#148]
+Functions [1]: [partial_first(locode#143, false)]
+Aggregate Attributes [2]: [first#176, valueSet#177]
+Results [3]: [key#148, first#178, valueSet#179]
+(21) Exchange
+Input [3]: [key#148, first#178, valueSet#179]
+Arguments: hashpartitioning(key#148, 8), ENSURE_REQUIREMENTS, [plan_id=267]
+(22) Sort
+Input [3]: [key#148, first#178, valueSet#179]
+Arguments: [key#148 ASC NULLS FIRST], false, 0
+(23) SortAggregate
+Input [3]: [key#148, first#178, valueSet#179]
+Keys [1]: [key#148]
+Functions [1]: [first(locode#143, false)]
+Aggregate Attributes [1]: [first(locode#143)()#170]
+Results [2]: [key#148 AS destination_key#142, first(locode#143)()#170 AS destination_locode#141]
+(24) BroadcastExchange
+Input [2]: [destination_key#142, destination_locode#141]
+Arguments: HashedRelationBroadcastMode(List(input[0, string, true]),false), [plan_id=271]
+(25) BroadcastHashJoin
+Left keys [1]: [destination_key#136]
+Right keys [1]: [destination_key#142]
+Join type: LeftOuter
+Join condition: None
+(26) Project
+Output [15]: [run_id#112, source_id#113, carrier#114, fetched_at#115, unit#124, surcharges#127, record_hash#129, _corrupt#130, price_parsed#132, valid_from#133, valid_to#134, container_key#137, currency_key#138, origin_locode#139, destination_locode#141]
+Input [17]: [run_id#112, source_id#113, carrier#114, fetched_at#115, unit#124, surcharges#127, record_hash#129, _corrupt#130, price_parsed#132, valid_from#133, valid_to#134, destination_key#136, container_key#137, currency_key#138, origin_locode#139, destination_key#142, destination_locode#141]
+(27) Scan csv 
+Output [2]: [alias#42, container_type#43]
+Batched: false
+Location: InMemoryFileIndex [file:/D:/projects/logistics-rate-pipeline/spark/config/container_aliases.csv]
+ReadSchema: struct<alias:string,container_type:string>
+(28) Filter
+Input [2]: [alias#42, container_type#43]
+Condition : isnotnull(upper(trim(alias#42, None)))
+(29) Project
+Output [2]: [upper(trim(alias#42, None)) AS container_key#150, container_type#43]
+Input [2]: [alias#42, container_type#43]
+(30) BroadcastExchange
+Input [2]: [container_key#150, container_type#43]
+Arguments: HashedRelationBroadcastMode(List(input[0, string, true]),false), [plan_id=275]
+(31) BroadcastHashJoin
+Left keys [1]: [container_key#137]
+Right keys [1]: [container_key#150]
+Join type: LeftOuter
+Join condition: None
+(32) Project
+Output [15]: [run_id#112, source_id#113, carrier#114, fetched_at#115, unit#124, surcharges#127, record_hash#129, _corrupt#130, price_parsed#132, valid_from#133, valid_to#134, currency_key#138, origin_locode#139, destination_locode#141, container_type#43]
+Input [17]: [run_id#112, source_id#113, carrier#114, fetched_at#115, unit#124, surcharges#127, record_hash#129, _corrupt#130, price_parsed#132, valid_from#133, valid_to#134, container_key#137, currency_key#138, origin_locode#139, destination_locode#141, container_key#150, container_type#43]
+(33) Scan csv 
+Output [2]: [container_type#86, teu#87]
+Batched: false
+Location: InMemoryFileIndex [file:/D:/projects/logistics-rate-pipeline/spark/config/teu_factors.csv]
+PushedFilters: [IsNotNull(container_type)]
+ReadSchema: struct<container_type:string,teu:string>
+(34) Filter
+Input [2]: [container_type#86, teu#87]
+Condition : isnotnull(container_type#86)
+(35) Project
+Output [2]: [container_type#86, cast(teu#87 as int) AS teu#88]
+Input [2]: [container_type#86, teu#87]
+(36) BroadcastExchange
+Input [2]: [container_type#86, teu#88]
+Arguments: HashedRelationBroadcastMode(List(input[0, string, true]),false), [plan_id=279]
+(37) BroadcastHashJoin
+Left keys [1]: [container_type#43]
+Right keys [1]: [container_type#86]
+Join type: LeftOuter
+Join condition: None
+(38) Project
+Output [17]: [container_type#43, run_id#112, source_id#113, carrier#114, fetched_at#115, unit#124, surcharges#127, record_hash#129, _corrupt#130, price_parsed#132, valid_from#133, valid_to#134, currency_key#138, origin_locode#139, destination_locode#141, teu#88, round((price_parsed#132 * CASE WHEN (unit#124 = per_teu) THEN cast(teu#88 as double) ELSE 1.0 END), 2) AS base_price#152]
+Input [17]: [run_id#112, source_id#113, carrier#114, fetched_at#115, unit#124, surcharges#127, record_hash#129, _corrupt#130, price_parsed#132, valid_from#133, valid_to#134, currency_key#138, origin_locode#139, destination_locode#141, container_type#43, container_type#86, teu#88]
+(39) Scan csv 
+Output [2]: [currency#63, usd_per_unit#64]
+Batched: false
+Location: InMemoryFileIndex [file:/D:/projects/logistics-rate-pipeline/spark/config/fx_rates.csv]
+ReadSchema: struct<currency:string,usd_per_unit:string>
+(40) Filter
+Input [2]: [currency#63, usd_per_unit#64]
+Condition : isnotnull(upper(currency#63))
+(41) Project
+Output [2]: [upper(currency#63) AS currency_key#153, cast(usd_per_unit#64 as double) AS usd_per_unit#67]
+Input [2]: [currency#63, usd_per_unit#64]
+(42) BroadcastExchange
+Input [2]: [currency_key#153, usd_per_unit#67]
+Arguments: HashedRelationBroadcastMode(List(input[0, string, true]),false), [plan_id=283]
+(43) BroadcastHashJoin
+Left keys [1]: [currency_key#138]
+Right keys [1]: [currency_key#153]
+Join type: LeftOuter
+Join condition: None
+(44) Filter
+Input [19]: [container_type#43, run_id#112, source_id#113, carrier#114, fetched_at#115, unit#124, surcharges#127, record_hash#129, _corrupt#130, price_parsed#132, valid_from#133, valid_to#134, currency_key#138, origin_locode#139, destination_locode#141, teu#88, base_price#152, currency_key#153, usd_per_unit#67]
+Condition : CASE WHEN isnotnull(_corrupt#130) THEN false WHEN (isnull(price_parsed#132) OR (price_parsed#132 <= 0.0)) THEN false WHEN (isnull(origin_locode#139) OR isnull(destination_locode#141)) THEN false WHEN (origin_locode#139 = destination_locode#141) THEN false WHEN isnull(container_type#43) THEN false WHEN ((unit#124 = per_teu) AND isnull(teu#88)) THEN false WHEN isnull(usd_per_unit#67) THEN false WHEN (isnull(valid_from#133) OR isnull(valid_to#134)) THEN false WHEN (valid_from#133 > valid_to#134) THEN false WHEN ((valid_to#134 < 2026-09-01) OR (valid_from#133 > 2026-09-01)) THEN false ELSE true END
+(45) Project
+Output [15]: [currency_key#138, container_type#43, run_id#112, source_id#113, carrier#114, fetched_at#115, unit#124, record_hash#129, valid_from#133, valid_to#134, origin_locode#139, destination_locode#141, base_price#152, round((base_price#152 * usd_per_unit#67), 2) AS price_usd#154, round((aggregate(coalesce(surcharges#127, []), 0.0, lambdafunction((lambda x_1#156 + coalesce(lambda y_2#157.amount, 0.0)), lambda x_1#156, lambda y_2#157, false), lambdafunction(lambda id#158, lambda id#158, false)) * usd_per_unit#67), 2) AS surcharges_usd#155]
+Input [19]: [container_type#43, run_id#112, source_id#113, carrier#114, fetched_at#115, unit#124, surcharges#127, record_hash#129, _corrupt#130, price_parsed#132, valid_from#133, valid_to#134, currency_key#138, origin_locode#139, destination_locode#141, teu#88, base_price#152, currency_key#153, usd_per_unit#67]
+(46) Project
+Output [16]: [currency_key#138, container_type#43, run_id#112, source_id#113, carrier#114, fetched_at#115, unit#124, record_hash#129, valid_from#133, valid_to#134, origin_locode#139, destination_locode#141, base_price#152, price_usd#154, surcharges_usd#155, round((price_usd#154 + surcharges_usd#155), 2) AS all_in_usd#159]
+Input [15]: [currency_key#138, container_type#43, run_id#112, source_id#113, carrier#114, fetched_at#115, unit#124, record_hash#129, valid_from#133, valid_to#134, origin_locode#139, destination_locode#141, base_price#152, price_usd#154, surcharges_usd#155]
+(47) Scan csv 
+Output [2]: [source_id#107, priority#108]
+Batched: false
+Location: InMemoryFileIndex [file:/D:/projects/logistics-rate-pipeline/spark/config/source_priority.csv]
+PushedFilters: [IsNotNull(source_id)]
+ReadSchema: struct<source_id:string,priority:string>
+(48) Filter
+Input [2]: [source_id#107, priority#108]
+Condition : isnotnull(source_id#107)
+(49) Project
+Output [2]: [source_id#107, cast(priority#108 as int) AS priority#109]
+Input [2]: [source_id#107, priority#108]
+(50) BroadcastExchange
+Input [2]: [source_id#107, priority#109]
+Arguments: HashedRelationBroadcastMode(List(input[0, string, true]),false), [plan_id=289]
+(51) BroadcastHashJoin
+Left keys [1]: [source_id#113]
+Right keys [1]: [source_id#107]
+Join type: LeftOuter
+Join condition: None
+(52) Project
+Output [17]: [source_id#113, currency_key#138, container_type#43, run_id#112, carrier#114, fetched_at#115, unit#124, record_hash#129, valid_from#133, valid_to#134, origin_locode#139, destination_locode#141, base_price#152, price_usd#154, surcharges_usd#155, all_in_usd#159, coalesce(priority#109, 999) AS priority#161]
+Input [18]: [currency_key#138, container_type#43, run_id#112, source_id#113, carrier#114, fetched_at#115, unit#124, record_hash#129, valid_from#133, valid_to#134, origin_locode#139, destination_locode#141, base_price#152, price_usd#154, surcharges_usd#155, all_in_usd#159, source_id#107, priority#109]
+(53) Sort
+Input [17]: [source_id#113, currency_key#138, container_type#43, run_id#112, carrier#114, fetched_at#115, unit#124, record_hash#129, valid_from#133, valid_to#134, origin_locode#139, destination_locode#141, base_price#152, price_usd#154, surcharges_usd#155, all_in_usd#159, priority#161]
+Arguments: [carrier#114 ASC NULLS FIRST, origin_locode#139 ASC NULLS FIRST, destination_locode#141 ASC NULLS FIRST, container_type#43 ASC NULLS FIRST, valid_from#133 ASC NULLS FIRST, priority#161 ASC NULLS FIRST, fetched_at#115 DESC NULLS LAST, record_hash#129 ASC NULLS FIRST], false, 0
+(54) WindowGroupLimit
+Input [17]: [source_id#113, currency_key#138, container_type#43, run_id#112, carrier#114, fetched_at#115, unit#124, record_hash#129, valid_from#133, valid_to#134, origin_locode#139, destination_locode#141, base_price#152, price_usd#154, surcharges_usd#155, all_in_usd#159, priority#161]
+Arguments: [carrier#114, origin_locode#139, destination_locode#141, container_type#43, valid_from#133], [priority#161 ASC NULLS FIRST, fetched_at#115 DESC NULLS LAST, record_hash#129 ASC NULLS FIRST], row_number(), 1, Partial
+(55) Exchange
+Input [17]: [source_id#113, currency_key#138, container_type#43, run_id#112, carrier#114, fetched_at#115, unit#124, record_hash#129, valid_from#133, valid_to#134, origin_locode#139, destination_locode#141, base_price#152, price_usd#154, surcharges_usd#155, all_in_usd#159, priority#161]
+Arguments: hashpartitioning(carrier#114, origin_locode#139, destination_locode#141, container_type#43, valid_from#133, 8), ENSURE_REQUIREMENTS, [plan_id=296]
+(56) Sort
+Input [17]: [source_id#113, currency_key#138, container_type#43, run_id#112, carrier#114, fetched_at#115, unit#124, record_hash#129, valid_from#133, valid_to#134, origin_locode#139, destination_locode#141, base_price#152, price_usd#154, surcharges_usd#155, all_in_usd#159, priority#161]
+Arguments: [carrier#114 ASC NULLS FIRST, origin_locode#139 ASC NULLS FIRST, destination_locode#141 ASC NULLS FIRST, container_type#43 ASC NULLS FIRST, valid_from#133 ASC NULLS FIRST, priority#161 ASC NULLS FIRST, fetched_at#115 DESC NULLS LAST, record_hash#129 ASC NULLS FIRST], false, 0
+(57) WindowGroupLimit
+Input [17]: [source_id#113, currency_key#138, container_type#43, run_id#112, carrier#114, fetched_at#115, unit#124, record_hash#129, valid_from#133, valid_to#134, origin_locode#139, destination_locode#141, base_price#152, price_usd#154, surcharges_usd#155, all_in_usd#159, priority#161]
+Arguments: [carrier#114, origin_locode#139, destination_locode#141, container_type#43, valid_from#133], [priority#161 ASC NULLS FIRST, fetched_at#115 DESC NULLS LAST, record_hash#129 ASC NULLS FIRST], row_number(), 1, Final
+(58) Window
+Input [17]: [source_id#113, currency_key#138, container_type#43, run_id#112, carrier#114, fetched_at#115, unit#124, record_hash#129, valid_from#133, valid_to#134, origin_locode#139, destination_locode#141, base_price#152, price_usd#154, surcharges_usd#155, all_in_usd#159, priority#161]
+Arguments: [row_number() windowspecdefinition(carrier#114, origin_locode#139, destination_locode#141, container_type#43, valid_from#133, priority#161 ASC NULLS FIRST, fetched_at#115 DESC NULLS LAST, record_hash#129 ASC NULLS FIRST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS _rn#162], [carrier#114, origin_locode#139, destination_locode#141, container_type#43, valid_from#133], [priority#161 ASC NULLS FIRST, fetched_at#115 DESC NULLS LAST, record_hash#129 ASC NULLS FIRST]
+(59) Filter
+Input [18]: [source_id#113, currency_key#138, container_type#43, run_id#112, carrier#114, fetched_at#115, unit#124, record_hash#129, valid_from#133, valid_to#134, origin_locode#139, destination_locode#141, base_price#152, price_usd#154, surcharges_usd#155, all_in_usd#159, priority#161, _rn#162]
+Condition : (_rn#162 = 1)
+(60) Project
+Output [18]: [run_id#112, carrier#114, concat_ws(-, origin_locode#139, destination_locode#141) AS lane_id#164, origin_locode#139, destination_locode#141, container_type#43, price_usd#154, base_price#152, currency_key#138 AS base_currency#165, surcharges_usd#155, all_in_usd#159, unit#124 AS unit_source#166, valid_from#133, valid_to#134, source_id#113, fetched_at#115, record_hash#129, 2026-09-17 13:15:43.010484 AS normalized_at#167]
+Input [18]: [source_id#113, currency_key#138, container_type#43, run_id#112, carrier#114, fetched_at#115, unit#124, record_hash#129, valid_from#133, valid_to#134, origin_locode#139, destination_locode#141, base_price#152, price_usd#154, surcharges_usd#155, all_in_usd#159, priority#161, _rn#162]
+(61) AdaptiveSparkPlan
+Output [18]: [run_id#112, carrier#114, lane_id#164, origin_locode#139, destination_locode#141, container_type#43, price_usd#154, base_price#152, base_currency#165, surcharges_usd#155, all_in_usd#159, unit_source#166, valid_from#133, valid_to#134, source_id#113, fetched_at#115, record_hash#129, normalized_at#167]
+Arguments: isFinalPlan=false
+SUCCESS: The process with PID 11300 (child process of PID 35760) has been terminated.
+SUCCESS: The process with PID 35760 (child process of PID 34736) has been terminated.
+SUCCESS: The process with PID 34736 (child process of PID 11140) has been terminated.

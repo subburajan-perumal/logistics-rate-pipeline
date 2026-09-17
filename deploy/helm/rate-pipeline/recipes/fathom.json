@@ -1,0 +1,17 @@
+{
+  "source_id": "fathom",
+  "carrier": "FATHOM",
+  "url": "${MOCKSOURCES_URL}/fathom/bulk.csv.gz",
+  "format": "csv",
+  "compression": "gzip",
+  "columns": {
+    "origin_raw": "origin", "destination_raw": "destination",
+    "container_type_raw": "type", "price_raw": "price",
+    "currency": "currency", "unit": "per_container",
+    "valid_from_raw": "valid_from", "valid_to_raw": "valid_to"
+  },
+  "hints": {"decimal_style": "us", "date_layout": "2006-01-02"},
+  "timeout": "60s",
+  "retry": {"max_attempts": 3, "base_backoff": "500ms", "max_backoff": "5s"},
+  "rate_limit_rps": 2
+}

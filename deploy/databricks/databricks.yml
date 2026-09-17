@@ -1,0 +1,32 @@
+# Declarative Automation Bundle (formerly Asset Bundle) for Databricks Free
+# Edition — serverless only (docs/PLAN.md §12, D-32).
+#   databricks bundle validate -t dev
+#   databricks bundle deploy   -t dev
+#   databricks bundle run rate_normalizer_job -t dev --params run_id=<id>
+bundle:
+  name: rate-pipeline
+
+include:
+  - resources/*.yml
+
+artifacts:
+  rate_normalizer:
+    type: whl
+    path: ../../spark
+    build: python -m pip wheel --no-deps -w dist .
+
+variables:
+  run_id:
+    description: run directory under the raw Volume
+    default: fixture
+  catalog:
+    default: workspace
+  schema:
+    default: rates
+
+targets:
+  dev:
+    mode: development
+    default: true
+    workspace:
+      host: ${DATABRICKS_HOST}

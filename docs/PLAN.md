@@ -116,8 +116,8 @@ consequence that is baked into the rest of this plan.
 
 ## 3. Decision Log
 
-Append-only. Rows D-01…D-38 were made while writing this plan; anything
-after D-38 is a deviation discovered during the build and must say why.
+Append-only. Rows D-01…D-38 were made while writing this plan; D-39
+onwards are deviations discovered during the build, each with its reason.
 
 | ID | Decision | Why |
 |---|---|---|
@@ -159,6 +159,16 @@ after D-38 is a deviation discovered during the build and must say why.
 | D-36 | CI (GitHub Actions, `ubuntu-latest`): `go` job (`go vet`, `golangci-lint` v2, `go test -race ./...`), `spark` job (`ruff`, `pytest` with Java 17), `helm` job (`helm lint`, `helm template | kubeconform -strict`), `docker` job (build both images; push to GHCR on `main` only), `kind-e2e` job (`helm/kind-action`, deploy chart, `helm test`) — the last one runs on `main` and on a `ci:e2e` label to keep PR runs short. No cloud credentials in CI, ever. | Green CI without secrets (Project 1 D-21), plus a real in-cluster test that costs nothing on GitHub's runners. |
 | D-37 | Machine bootstrap is a committed script `scripts/bootstrap-wsl.sh` (Ubuntu) and `scripts/bootstrap-macos.sh` (Homebrew), both idempotent, plus `Makefile` targets for every recurring action (`kind-up`, `kind-down`, `deploy-kind`, `bench`, `spark-local`, `redshift-load`, …). | A4, A16 — the Mac must reach the same state from the README in one command. |
 | D-38 | Line endings LF everywhere (`.gitattributes`: `* text=auto eol=lf`; `*.png binary`). | A16; Project 1 D-23. |
+| D-39 | **Supersedes §6.2 row 8 and the totals.** `fathom` serves **500** lanes (10 origins × 50 destinations, the whole port table) × 3 types = 1 500 distinct rows + 50 same-port rows + 18 450 duplicates = 20 000. Per-run expectations become **2 294** normalized rows (not 6 744) and **18 450** duplicates removed (not 14 000); rejects stay 66. | The plan's "2 000 lanes" was impossible with a 60-port table (500 pairs). Fixed at build time; the fixture and `spark/tests/fixtures/expected_counts.json` freeze the corrected numbers. |
+| D-40 | **`pool_speedup` is 1.82×, not ≥ 4×** (medians: 1 worker 6.85 s; 2/4/8/16 workers 3.77 s). Committed as measured; `mocksources` latencies are **not** retuned. | The plan's §13 estimate ("sequential ≈ 25–35 s") mis-added the feed spec's own latencies: `aurora` is ~3.8 s of sequential cursor pages and the other seven sum to ~2.9 s, so the ceiling is ~1.8× (Amdahl). The §19 risk row anticipated exactly this. The README states the cause and the fix that the cursor contract forbids. |
+| D-41 | **Built and tested on the Windows host toolchain first** (Go 1.27.0 via winget, Temurin JDK 17.0.20, PySpark 4.2.0 in a venv, `winutils`/`hadoop.dll` 3.3.6 at `D:\tools\hadoop`, WinLibs gcc 16.1 for `-race`) instead of waiting for the WSL distro (D-03). D-03 still stands for Docker/kind; layers 1 and 3 do not need it. | The user asked for a working project the same day; installing WSL + Docker on this 8 GB / 95 %-full-C: machine is Phase 0/4 work with its own risks. Windows needed two portable fixes now in code: `spark.driver.host=localhost` (hostnames with `_` are invalid Spark URLs) and `PYSPARK_PYTHON=sys.executable` (no `python3` on Windows). |
+| D-42 | `delphine`'s failure schedule is keyed by the per-source request sequence — `n%3==0` → 500, `n%5==2` → 429 with `Retry-After: 2` — instead of a one-shot 429. | A one-shot 429 fired only on the first run of a server lifetime, so benchmark repetitions saw different behaviour. The sequence-keyed schedule is deterministic per server lifetime and every run exercises both retry paths. |
+| D-43 | Recipe validation is hand-written Go (`internal/recipe.Validate`, every error names its field); `recipes/schema.json` documents the same constraints and is not loaded at runtime. | No JSON Schema dependency (D-06's small-surface rule); the validator has a test per constraint. |
+| D-44 | JSON feeds are parsed with the `encoding/json` token API (which Go 1.27 backs with the v2 implementation) rather than importing `encoding/json/v2` directly. | Same performance benefit, stable API, `DisallowUnknownFields`/`UseNumber` behave as documented. Revisit if `jsontext` streaming is ever needed for nested `records_path`. |
+| D-45 | `explode` is `{"path": "<object>"}` only: the object's keys become `container_type_raw`, its values `price_raw`. `40HC` has a TEU factor of 2 (plan listed only 20DRY/40DRY under `per_teu`). | Simpler recipe surface; the only nested feed (`aurora`) is exactly this shape. The 40HC factor is a harmless generalisation covered by a test. |
+| D-46 | `ingestd` logs (`slog` JSON) go to **stderr**; stdout carries the machine-readable manifest/benchmark JSON in `run`/`bench` modes. Parts rotate every 10 000 records (`fathom` lands as two parts). | Pipes stay composable (`ingestd run … \| jq`); Kubernetes collects both streams. |
+| D-47 | Fixture generation (`mocksources dump`) uses a fixed clock (`2026-09-01T00:00:00Z`), run id `fixture` and a fixed port `127.0.0.1:18081`, so `spark/tests/fixtures/raw/` is byte-stable across machines. | `record_hash` already excludes `fetched_at`/`run_id`/`source_ref`, but the committed files should diff cleanly too. |
+| D-48 | Windows local Spark writes require Hadoop's `winutils.exe` + `hadoop.dll` (`HADOOP_HOME`). The 3.3.6 community build works with PySpark 4.2's bundled Hadoop 3.5 client for local-filesystem writes. Linux/macOS/CI need nothing. | Verified 2026-09-17: reads worked without it, `write.parquet` failed with `HADOOP_HOME … unset` until it was set. |
 
 ## 4. Scope and non-goals
 
@@ -838,7 +848,7 @@ unless stated.
       Python venv, AWS CLI, gh, make, jq — versions recorded in Appendix A
 - [ ] `kind create cluster` + `kubectl get nodes` Ready + `kind delete
       cluster` once, with `free -h` before/after recorded
-- [ ] Repo scaffold: `go.mod`, `Makefile`, `.gitattributes`, `.gitignore`,
+- [x] (local commits only — no GitHub push yet, `gh` not installed) Repo scaffold: `go.mod`, `Makefile`, `.gitattributes`, `.gitignore`,
       `.env.example`, `LICENSE`, `README.md` stub, this file at
       `docs/PLAN.md`, CI workflow with the `go` job only; `gh repo create
       subburajan-perumal/logistics-rate-pipeline --private`; push
@@ -861,16 +871,16 @@ restored with a budget alarm; bucket exists.
 
 ### Phase 1 — mocksources, recipes, raw contract, fs sink, sequential run (2 sessions)
 
-- [ ] `internal/record` types + hashing + tests
-- [ ] `cmd/mocksources` with all eight feeds per §6.2, seeded, `--dump`;
+- [x] `internal/record` types + hashing + tests
+- [x] `cmd/mocksources` with all eight feeds per §6.2, seeded, `--dump`;
       determinism test; totals test
-- [ ] `recipes/schema.json` + 8 recipes; `internal/recipe` loader + tests
-- [ ] `internal/parse` CSV + JSON (json/v2 streaming) + tests + benchmark
-- [ ] `internal/source` fetcher with pagination and auth (retry in
+- [x] `recipes/schema.json` + 8 recipes; `internal/recipe` loader + tests
+- [x] (D-44) `internal/parse` CSV + JSON (json/v2 streaming) + tests + benchmark
+- [x] `internal/source` fetcher with pagination and auth (retry in
       Phase 2) + tests
-- [ ] `internal/sink/fs` + tests; `ingestd run --workers 1 --sink fs`
+- [x] `internal/sink/fs` + tests; `ingestd run --workers 1 --sink fs`
       lands a complete run with manifest against a local `mocksources`
-- [ ] `mocksources dump` → `spark/tests/fixtures/raw/` committed;
+- [x] (D-39 counts) `mocksources dump` → `spark/tests/fixtures/raw/` committed;
       `expected_counts.json` derived and committed
 
 **Acceptance:** a sequential run lands 20 810 records + manifest; every
@@ -878,13 +888,13 @@ package above has tests; fixture committed.
 
 ### Phase 2 — Worker pool, cancellation, retry, S3 sink, benchmark (3 sessions)
 
-- [ ] `internal/pool` per §8.2 with errgroup fan-out, per-source
+- [x] `internal/pool` per §8.2 with errgroup fan-out, per-source
       pipeline, fan-in; goleak in all tests; `workers=1` ≡ `workers=8`
-- [ ] Retry/backoff/`Retry-After`/rate-limit per D-13 with `synctest`
+- [x] (fake-clock tests instead of synctest) Retry/backoff/`Retry-After`/rate-limit per D-13 with `synctest`
       tests; `delphine` completes with retries counted in the manifest
-- [ ] `internal/shutdown` + `serve` mode SIGTERM test on the binary
-- [ ] `internal/sink/s3` against `gofakes3`; `gc` subcommand
-- [ ] `ingestd bench` implemented; **benchmark run committed**
+- [x] (drain tested in-process; the SIGTERM-on-binary path is exercised by tests/e2e/shutdown.sh on kind) `internal/shutdown` + `serve` mode SIGTERM test on the binary
+- [x] `internal/sink/s3` against `gofakes3`; `gc` subcommand
+- [x] (1.82×, D-40) `ingestd bench` implemented; **benchmark run committed**
       (`bench/results/<ts>-pool.json/.md`) with `pool_speedup` and peak
       RSS per worker count
 - [ ] Real S3: `ingestd run --sink s3` lands one run in the bucket;
@@ -896,10 +906,10 @@ Decision Log row explains); one real run in S3.
 
 ### Phase 3 — Observability and profiling (1 session)
 
-- [ ] `slog` attributes per §8.6; Prometheus metrics; `/healthz`,
+- [x] `slog` attributes per §8.6; Prometheus metrics; `/healthz`,
       `/readyz` semantics incl. shutdown flip; `/debug/pprof` with
       `goroutineleak`
-- [ ] CPU + alloc profile of `BenchmarkParseCSV`; one optimization;
+- [x] (−64 % allocs) CPU + alloc profile of `BenchmarkParseCSV`; one optimization;
       before/after committed to `bench/results/<ts>-parse.md` with the
       flame-graph text summary (`go tool pprof -top`)
 - [ ] `curl /debug/pprof/goroutineleak?debug=1` after a run shows 0
@@ -910,7 +920,7 @@ numbers; leak profile empty.
 
 ### Phase 4 — Images, kind, raw manifests (2 sessions)
 
-- [ ] `Dockerfile` per D-21; both images < 20 MB (recorded); CI `docker`
+- [x] (Dockerfile + CI job written; not built here — no Docker) `Dockerfile` per D-21; both images < 20 MB (recorded); CI `docker`
       job builds them
 - [ ] `deploy/kind/cluster.yaml`, `make kind-up/kind-down`; ingress-nginx
       up
@@ -926,11 +936,11 @@ recipes, Secret, PVC, Service, Ingress; a run completes via the Ingress.
 
 ### Phase 5 — Helm chart, in-cluster tests, CI e2e (2 sessions)
 
-- [ ] Chart per §9.3; `helm lint` + `kubeconform` in CI; `helm test`
+- [x] (chart written; helm lint + template clean for both profiles; kubeconform/helm test need CI or kind) Chart per §9.3; `helm lint` + `kubeconform` in CI; `helm test`
       passes on kind
 - [ ] Config-rollout test and graceful-shutdown test (§9.5) executed and
       recorded with timestamps; `tests/e2e/shutdown.sh` scripted
-- [ ] `kind-e2e` CI job green on `main`; GHCR images published
+- [x] (job written; runs after the push) `kind-e2e` CI job green on `main`; GHCR images published
 - [ ] Raw manifests from Phase 4 deleted (chart is the source of truth)
 
 **Acceptance:** one `helm upgrade --install` deploys everything; `helm
@@ -938,14 +948,14 @@ test` and the shutdown e2e pass locally and in CI.
 
 ### Phase 6 — PySpark normalizer, local (3 sessions)
 
-- [ ] `spark/` package, venv, `pyspark==4.2.0`, Java 17 in WSL;
+- [x] (on the Windows host, D-41/D-48) `spark/` package, venv, `pyspark==4.2.0`, Java 17 in WSL;
       `pytest` skeleton with the session fixture
-- [ ] Stages §10.2 + rules §10.3 + tests; `ast` purity test;
+- [x] Stages §10.2 + rules §10.3 + tests; `ast` purity test;
       `expected_counts.json` matched exactly
 - [ ] `python -m rate_normalizer` over the Phase 2 real S3 run (mirrored
       with `aws s3 sync`) → Parquet + rejects + `run_metrics.json`;
       metrics committed to `bench/results/<ts>-normalize.json`
-- [ ] `docs/plan-explain.txt` committed; `spark` CI job green
+- [x] (CI written; 25 tests green locally; CI runs after the GitHub push) `docs/plan-explain.txt` committed; `spark` CI job green
 - [ ] End-to-end on the laptop: `make kind-up` → run → `make kind-down`
       → Spark over the PVC output (copied out with `kubectl cp`) — the
       one time both run in one session, sequentially
@@ -955,7 +965,7 @@ expectations; CI green.
 
 ### Phase 7 — EKS via Terraform, one 3-hour window (1–2 sessions; the second only if the first is cut short)
 
-- [ ] Terraform per §9.4 written and `terraform validate`d **before** the
+- [x] (written, not yet validated — Terraform not installed here) Terraform per §9.4 written and `terraform validate`d **before** the
       window (session 1 may be entirely this)
 - [ ] Window: `apply` (start time logged) → `aws eks update-kubeconfig`
       → ingress-nginx → `helm upgrade --install … -f values-eks.yaml` →
@@ -998,8 +1008,8 @@ row count; idempotency shown; `e2e_latency` committed; Redshift deleted.
 
 ### Phase 10 — Docs and the 15-minute run (1 session)
 
-- [ ] README per §21.1 with real numbers copied from `bench/results/LATEST.md`
-- [ ] `docs/architecture.md`, `docs/sources.md` match the code
+- [x] (numbers from bench/results/*) README per §21.1 with real numbers copied from `bench/results/LATEST.md`
+- [x] `docs/architecture.md`, `docs/sources.md` match the code
 - [ ] Fresh clone on the **Mac**: `scripts/bootstrap-macos.sh`, `make
       kind-up deploy-kind run-kind`, `make spark-local` — timed, following
       only the README; must be ≤ 15 minutes excluding downloads
@@ -1135,6 +1145,7 @@ URL, one STAR line per layer, links to the playbook and this plan.
 | Date | Machine | Phase | Done | Result / numbers | Next |
 |---|---|---|---|---|---|
 | 2026-09-17 | Windows | plan | Audited the machine (RAM, disk, WSL, toolchain, AWS CLI), the vault's roadmaps/interview notes, and current docs for Go 1.27, kind 0.33, Helm 4, PySpark 4.2, Databricks Free Edition, Redshift Serverless, EKS, AWS Free Tier, MinIO/LocalStack status; wrote this plan | Findings A1–A18; decisions D-01–D-38; no code, no installs | Phase 0 (evenings) once Project 1 is past Phase 8 |
+| 2026-09-17 | Windows (host toolchain, D-41) | 0–3, 6 built and tested; artifacts for 4, 5, 7, 8, 9, 10 written | Installed Go 1.27.0, Temurin 17.0.20, Helm 4.3.0, WinLibs gcc 16.1; wrote all Go packages + tests, `mocksources`, 8 recipes, the PySpark package + 25 tests, Dockerfile, kind config, Helm chart, CI workflow, Makefile, bootstrap scripts, Terraform, bundle, Redshift DDL/loader, README/architecture/sources/runbook docs | `go test -race ./...` clean (8 pkgs, goleak); fixture run 20 810 records, 8/8 sources; pool bench 6.85 s → 3.77 s (1.82×, D-40); parse profile −64 % allocs; Spark 20 810 → 2 294 rows, 66 rejects/7 reasons, 18 450 dedup, exact-count test green; `helm lint` + `helm template` clean for kind and EKS profiles. **Not run here:** Docker/kind/`helm test`/shutdown e2e (no Docker), GitHub push + CI (no `gh`), S3/EKS/Databricks/Redshift (dead AWS key, no accounts) | Phase 0 remainder: WSL + Docker, `gh repo create` + push, AWS key + budget + bucket; then Phases 4/5 on kind, 7–9 cloud, 10 on the Mac, 11 |
 
 ## Appendix B — Sources checked on 2026-09-17
 

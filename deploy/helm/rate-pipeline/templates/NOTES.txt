@@ -1,0 +1,9 @@
+{{ include "rp.fullname" . }} deployed.
+
+  Start a run:   curl -X POST http://{{ .Values.ingestd.ingress.host }}/runs
+  Watch it:      curl http://{{ .Values.ingestd.ingress.host }}/runs
+  Metrics:       curl http://{{ .Values.ingestd.ingress.host }}/metrics
+  Leak profile:  curl "http://{{ .Values.ingestd.ingress.host }}/debug/pprof/goroutineleak?debug=1"
+  Smoke test:    helm test {{ .Release.Name }} -n {{ .Release.Namespace }}
+
+Sink: {{ .Values.ingestd.sink }}{{ if eq .Values.ingestd.sink "s3" }} → s3://{{ .Values.ingestd.s3.bucket }}/{{ .Values.ingestd.s3.prefix }}{{ end }}

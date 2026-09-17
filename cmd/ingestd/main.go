@@ -146,7 +146,7 @@ func cmdServe(args []string) error {
 	var c common
 	c.bind(fs)
 	listen := fs.String("listen", env("INGESTD_LISTEN", ":8080"), "listen address")
-	schedule := fs.Duration("schedule", 0, "start a run every interval (0 = API only)")
+	schedule := fs.Duration("schedule", envDuration("INGESTD_SCHEDULE", 0), "start a run every interval (0 = API only)")
 	grace := fs.Duration("shutdown-grace", mustDuration(env("INGESTD_SHUTDOWN_GRACE", "45s")), "time to wait for runs to abort on SIGTERM")
 	_ = fs.Parse(args)
 	log := c.logger()
@@ -224,6 +224,13 @@ func cmdServe(args []string) error {
 	})
 	log.Info("exited", "clean", clean)
 	return nil
+}
+
+func envDuration(k string, def time.Duration) time.Duration {
+	if d, err := time.ParseDuration(os.Getenv(k)); err == nil {
+		return d
+	}
+	return def
 }
 
 func mustDuration(s string) time.Duration {

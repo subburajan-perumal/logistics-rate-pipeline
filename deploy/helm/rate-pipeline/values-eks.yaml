@@ -1,0 +1,15 @@
+# EKS: images from GHCR, S3 sink via Pod Identity (no AWS keys in the cluster),
+# ingress-nginx fronted by an NLB (docs/PLAN.md D-25).
+ingestd:
+  image: {tag: latest, pullPolicy: Always}
+  sink: s3
+  s3:
+    bucket: CHANGE_ME
+    region: us-east-1
+  fs:
+    pvc: {enabled: false}
+  asOf: "2026-09-01"
+  ingress:
+    host: ingest.CHANGE_ME.nip.io
+mocksources:
+  image: {tag: latest, pullPolicy: Always}

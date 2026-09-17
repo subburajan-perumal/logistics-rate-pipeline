@@ -1,0 +1,30 @@
+# `helm test <release>`: start a run through the Service, poll it, and fail
+# unless it finished with records > 0 (docs/PLAN.md D-23).
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ include "rp.fullname" . }}-test-run
+  labels: {{- include "rp.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: test
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  restartPolicy: Never
+  containers:
+    - name: run
+      image: curlimages/curl:8.11.1
+      command: ["/bin/sh", "-ec"]
+      args:
+        - |
+          base="http://{{ include "rp.fullname" . }}-ingestd:{{ .Values.ingestd.service.port }}"
+          id=$(curl -sf -X POST "$base/runs" -H 'content-type: application/json' -d '{}' | sed -n 's/.*"run_id":"\([^"]*\)".*/\1/p')
+          echo "run $id started"
+          for i in $(seq 1 60); do
+            body=$(curl -sf "$base/runs/$id")
+            status=$(echo "$body" | sed -n 's/.*"status":"\([^"]*\)".*/\1/p')
+            [ "$status" != "running" ] && break
+            sleep 2
+          done
+          echo "$body"
+          records=$(echo "$body" | sed -n 's/.*"records":\([0-9]*\).*/\1/p')
+          [ "$status" = "ok" ] && [ "${records:-0}" -gt 0 ]

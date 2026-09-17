@@ -1,0 +1,21 @@
+# One-node kind cluster (docs/PLAN.md D-24): the control plane schedules
+# workloads; ports 80/443 are mapped so ingress-nginx is reachable on the host.
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: rates
+nodes:
+  - role: control-plane
+    kubeadmConfigPatches:
+      - |
+        kind: InitConfiguration
+        nodeRegistration:
+          kubeletExtraArgs:
+            - name: node-labels
+              value: "ingress-ready=true"
+    extraPortMappings:
+      - containerPort: 80
+        hostPort: 80
+        protocol: TCP
+      - containerPort: 443
+        hostPort: 443
+        protocol: TCP

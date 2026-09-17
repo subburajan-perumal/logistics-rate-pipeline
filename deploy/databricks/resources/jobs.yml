@@ -1,0 +1,33 @@
+resources:
+  jobs:
+    rate_normalizer_job:
+      name: rate-normalizer (${bundle.target})
+      # Serverless: no job clusters (Free Edition rejects them); the wheel is
+      # attached through the environment (environment version 6, Python 3.12).
+      environments:
+        - environment_key: default
+          spec:
+            environment_version: "6"
+            dependencies:
+              - ../../spark/dist/*.whl
+      parameters:
+        - {name: run_id, default: "${var.run_id}"}
+      tasks:
+        - task_key: normalize
+          environment_key: default
+          python_wheel_task:
+            package_name: rate_normalizer
+            entry_point: rate-normalizer
+            parameters:
+              - --input
+              - /Volumes/${var.catalog}/${var.schema}/raw/runs/run_id={{job.parameters.run_id}}
+              - --output
+              - /Volumes/${var.catalog}/${var.schema}/normalized/run_id={{job.parameters.run_id}}
+              - --config
+              - /Volumes/${var.catalog}/${var.schema}/config
+              - --as-of
+              - "2026-09-01"
+              - --format
+              - delta
+              - --delta-schema
+              - ${var.catalog}.${var.schema}

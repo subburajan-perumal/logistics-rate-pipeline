@@ -1,0 +1,18 @@
+{
+  "source_id": "aurora",
+  "carrier": "AURORA",
+  "url": "${MOCKSOURCES_URL}/aurora/v2/lanes",
+  "format": "json",
+  "pagination": {"type": "cursor", "param": "cursor", "path": "next_cursor"},
+  "records_path": "lanes",
+  "explode": {"path": "containers"},
+  "columns": {
+    "origin_raw": "origin", "destination_raw": "destination",
+    "currency": "currency", "unit": "per_container",
+    "valid_from_raw": "valid.from", "valid_to_raw": "valid.to"
+  },
+  "hints": {"decimal_style": "plain", "date_layout": "2006-01-02"},
+  "timeout": "30s",
+  "retry": {"max_attempts": 4, "base_backoff": "250ms", "max_backoff": "5s"},
+  "rate_limit_rps": 5
+}

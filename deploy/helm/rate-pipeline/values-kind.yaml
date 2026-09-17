@@ -1,0 +1,6 @@
+ingestd:
+  image: {tag: dev, pullPolicy: Never}
+  sink: fs
+  asOf: "2026-09-01"
+mocksources:
+  image: {tag: dev, pullPolicy: Never}

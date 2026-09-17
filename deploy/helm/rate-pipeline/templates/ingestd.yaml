@@ -1,0 +1,168 @@
+{{- $full := include "rp.fullname" . -}}
+{{- $v := .Values.ingestd -}}
+{{- if $v.serviceAccount.create }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "rp.serviceAccountName" . }}
+  labels: {{- include "rp.labels" . | nindent 4 }}
+  {{- with $v.serviceAccount.annotations }}
+  annotations: {{- toYaml . | nindent 4 }}
+  {{- end }}
+---
+{{- end }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $full }}-recipes
+  labels: {{- include "rp.labels" . | nindent 4 }}
+data:
+{{- range $path, $bytes := .Files.Glob "recipes/*.json" }}
+  {{ base $path }}: |-
+{{ $.Files.Get $path | indent 4 }}
+{{- end }}
+---
+{{- if and (eq $v.sink "fs") $v.fs.pvc.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ $full }}-raw
+  labels: {{- include "rp.labels" . | nindent 4 }}
+spec:
+  accessModes: [ReadWriteOnce]
+  {{- with $v.fs.pvc.storageClassName }}
+  storageClassName: {{ . }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ $v.fs.pvc.size }}
+---
+{{- end }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $full }}-ingestd
+  labels:
+    {{- include "rp.labels" . | nindent 4 }}
+    app.kubernetes.io/component: ingestd
+spec:
+  replicas: {{ $v.replicas }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate: {maxSurge: 1, maxUnavailable: 0}
+  selector:
+    matchLabels: {{- include "rp.ingestd.selector" . | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "rp.ingestd.selector" . | nindent 8 }}
+      annotations:
+        # A recipe change rolls the pods (readiness re-validates the recipes).
+        checksum/recipes: {{ (.Files.Glob "recipes/*.json").AsConfig | sha256sum | trunc 16 }}
+    spec:
+      serviceAccountName: {{ include "rp.serviceAccountName" . }}
+      terminationGracePeriodSeconds: {{ $v.terminationGracePeriodSeconds }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        fsGroup: 65532
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: ingestd
+          image: "{{ $v.image.repository }}:{{ $v.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ $v.image.pullPolicy }}
+          args: ["serve"]
+          ports:
+            - {name: http, containerPort: 8080}
+          env:
+            - {name: INGESTD_RECIPES, value: /etc/recipes}
+            - {name: INGESTD_SINK, value: {{ $v.sink | quote }}}
+            - {name: INGESTD_OUT, value: {{ $v.fs.path | quote }}}
+            - {name: INGESTD_BUCKET, value: {{ $v.s3.bucket | quote }}}
+            - {name: INGESTD_PREFIX, value: {{ $v.s3.prefix | quote }}}
+            - {name: AWS_REGION, value: {{ $v.s3.region | quote }}}
+            - {name: INGESTD_WORKERS, value: {{ $v.workers | quote }}}
+            - {name: INGESTD_LOG_LEVEL, value: {{ $v.logLevel | quote }}}
+            - {name: INGESTD_SHUTDOWN_GRACE, value: {{ $v.shutdownGrace | quote }}}
+            - {name: MOCKSOURCES_URL, value: {{ include "rp.mocksourcesURL" . | quote }}}
+            {{- if $v.asOf }}
+            - {name: INGESTD_AS_OF, value: {{ $v.asOf | quote }}}
+            {{- end }}
+            {{- if $v.schedule }}
+            - {name: INGESTD_SCHEDULE, value: {{ $v.schedule | quote }}}
+            {{- end }}
+          {{- if $v.secretName }}
+          envFrom:
+            - secretRef:
+                name: {{ $v.secretName }}
+                optional: true
+          {{- end }}
+          livenessProbe:
+            httpGet: {path: /healthz, port: http}
+            initialDelaySeconds: 2
+            periodSeconds: 10
+          readinessProbe:
+            httpGet: {path: /readyz, port: http}
+            initialDelaySeconds: 2
+            periodSeconds: 5
+            failureThreshold: 3
+          resources: {{- toYaml $v.resources | nindent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: [ALL]}
+          volumeMounts:
+            - {name: recipes, mountPath: /etc/recipes, readOnly: true}
+            - {name: tmp, mountPath: /tmp}
+            {{- if eq $v.sink "fs" }}
+            - {name: raw, mountPath: {{ $v.fs.path }}}
+            {{- end }}
+      volumes:
+        - name: recipes
+          configMap: {name: {{ $full }}-recipes}
+        - name: tmp
+          emptyDir: {}
+        {{- if eq $v.sink "fs" }}
+        - name: raw
+          {{- if $v.fs.pvc.enabled }}
+          persistentVolumeClaim: {claimName: {{ $full }}-raw}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+        {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $full }}-ingestd
+  labels:
+    {{- include "rp.labels" . | nindent 4 }}
+    app.kubernetes.io/component: ingestd
+spec:
+  type: ClusterIP
+  selector: {{- include "rp.ingestd.selector" . | nindent 4 }}
+  ports:
+    - {name: http, port: {{ $v.service.port }}, targetPort: http}
+{{- if $v.ingress.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ $full }}-ingestd
+  labels: {{- include "rp.labels" . | nindent 4 }}
+  {{- with $v.ingress.annotations }}
+  annotations: {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  ingressClassName: {{ $v.ingress.className }}
+  rules:
+    - host: {{ $v.ingress.host }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ $full }}-ingestd
+                port: {name: http}
+{{- end }}

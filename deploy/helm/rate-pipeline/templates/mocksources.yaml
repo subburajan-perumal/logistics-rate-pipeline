@@ -1,0 +1,61 @@
+{{- if .Values.mocksources.enabled }}
+{{- $full := include "rp.fullname" . -}}
+{{- $m := .Values.mocksources -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $full }}-mocksources
+  labels:
+    {{- include "rp.labels" . | nindent 4 }}
+    app.kubernetes.io/component: mocksources
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {{- include "rp.mocksources.selector" . | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "rp.mocksources.selector" . | nindent 8 }}
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: mocksources
+          image: "{{ $m.image.repository }}:{{ $m.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ $m.image.pullPolicy }}
+          args:
+            - serve
+            - --latency-scale={{ $m.latencyScale }}
+            {{- if not $m.failures }}
+            - --no-failures
+            {{- end }}
+          env:
+            - name: EVENTIDE_API_KEY
+              valueFrom:
+                secretKeyRef: {name: {{ .Values.ingestd.secretName }}, key: EVENTIDE_API_KEY, optional: true}
+          ports:
+            - {name: http, containerPort: 8081}
+          livenessProbe:
+            httpGet: {path: /healthz, port: http}
+          readinessProbe:
+            httpGet: {path: /healthz, port: http}
+          resources: {{- toYaml $m.resources | nindent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: [ALL]}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $full }}-mocksources
+  labels:
+    {{- include "rp.labels" . | nindent 4 }}
+    app.kubernetes.io/component: mocksources
+spec:
+  type: ClusterIP
+  selector: {{- include "rp.mocksources.selector" . | nindent 4 }}
+  ports:
+    - {name: http, port: {{ $m.service.port }}, targetPort: http}
+{{- end }}

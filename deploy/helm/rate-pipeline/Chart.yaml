@@ -1,0 +1,9 @@
+apiVersion: v2
+name: rate-pipeline
+description: Concurrent Go rate-feed ingestion service (ingestd) plus the synthetic feeds it pulls (mocksources)
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords: [ingestion, go, logistics]
+sources:
+  - https://github.com/subburajan-perumal/logistics-rate-pipeline

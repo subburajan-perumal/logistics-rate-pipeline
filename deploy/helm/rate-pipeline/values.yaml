@@ -1,0 +1,57 @@
+# Defaults are the kind profile; values-eks.yaml overrides for EKS.
+nameOverride: ""
+
+ingestd:
+  image:
+    repository: ghcr.io/subburajan-perumal/logistics-rate-pipeline/ingestd
+    tag: latest
+    pullPolicy: IfNotPresent
+  replicas: 1
+  workers: 8
+  asOf: ""                # empty = today; committed runs use 2026-09-01
+  logLevel: info
+  schedule: ""            # e.g. "15m" to start a run on a timer; empty = API only
+  shutdownGrace: 45s      # must stay below terminationGracePeriodSeconds
+  terminationGracePeriodSeconds: 60
+  sink: fs                # fs | s3
+  fs:
+    path: /data/raw
+    pvc:
+      enabled: true
+      size: 1Gi
+      storageClassName: ""   # kind: standard (default); leave empty to use the cluster default
+  s3:
+    bucket: ""
+    prefix: ""
+    region: us-east-1
+  # Secret holding EVENTIDE_API_KEY (+ AWS keys on kind). Created out of band:
+  #   kubectl -n rates create secret generic ingestd-secrets --from-env-file=.env.kind
+  secretName: ingestd-secrets
+  resources:
+    requests: {cpu: 50m, memory: 64Mi}
+    limits: {cpu: 500m, memory: 256Mi}
+  service:
+    port: 8080
+  ingress:
+    enabled: true
+    className: nginx
+    host: ingest.localtest.me
+    annotations: {}
+  serviceAccount:
+    create: true
+    name: ""
+    annotations: {}
+
+mocksources:
+  enabled: true
+  image:
+    repository: ghcr.io/subburajan-perumal/logistics-rate-pipeline/mocksources
+    tag: latest
+    pullPolicy: IfNotPresent
+  latencyScale: "1.0"
+  failures: true
+  resources:
+    requests: {cpu: 50m, memory: 32Mi}
+    limits: {cpu: 500m, memory: 128Mi}
+  service:
+    port: 8081

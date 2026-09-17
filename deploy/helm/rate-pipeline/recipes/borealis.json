@@ -1,0 +1,17 @@
+{
+  "source_id": "borealis",
+  "carrier": "BOREALIS",
+  "url": "${MOCKSOURCES_URL}/borealis/rates.json",
+  "format": "json",
+  "records_path": ".",
+  "columns": {
+    "origin_raw": "origin_city", "destination_raw": "destination_city",
+    "container_type_raw": "container", "price_raw": "price_gbp",
+    "currency": "currency", "unit": "per_container",
+    "valid_from_raw": "valid_from", "valid_to_raw": "valid_to"
+  },
+  "hints": {"decimal_style": "plain", "date_layout": "2006-01-02"},
+  "timeout": "20s",
+  "retry": {"max_attempts": 4, "base_backoff": "250ms", "max_backoff": "5s"},
+  "rate_limit_rps": 10
+}

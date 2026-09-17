@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/subburajan-perumal/logistics-rate-pipeline/recipes/schema.json",
+  "title": "ingestd source recipe",
+  "description": "Documents the constraints enforced by internal/recipe.Validate (D-43). One file per source; ${ENV} in url is expanded at load time.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["source_id", "carrier", "url", "format", "columns"],
+  "properties": {
+    "source_id": {"type": "string", "pattern": "^[a-z][a-z0-9_]{0,31}$"},
+    "carrier": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]*$"},
+    "url": {"type": "string", "pattern": "^https?://"},
+    "format": {"enum": ["csv", "json"]},
+    "compression": {"enum": ["none", "gzip"], "default": "none"},
+    "auth": {
+      "type": "object",
+      "properties": {
+        "type": {"enum": ["none", "api_key"], "default": "none"},
+        "header": {"type": "string"},
+        "secret_env": {"type": "string", "description": "environment variable holding the header value; never the value itself"}
+      }
+    },
+    "pagination": {
+      "type": "object",
+      "properties": {
+        "type": {"enum": ["none", "page", "cursor"], "default": "none"},
+        "param": {"type": "string", "description": "query parameter carrying the page number or cursor"},
+        "start": {"type": "integer", "minimum": 0, "description": "page: first page number (default 1)"},
+        "path": {"type": "string", "description": "top-level JSON key holding the next page/cursor; null/absent ends the feed"},
+        "max_pages": {"type": "integer", "minimum": 1, "default": 100}
+      }
+    },
+    "records_path": {"type": "string", "description": "json: top-level key of the records array, or \".\" when the document is the array"},
+    "explode": {
+      "type": "object",
+      "required": ["path"],
+      "properties": {"path": {"type": "string", "description": "dotted path to a {container_type: price} object; one record per key"}}
+    },
+    "columns": {
+      "type": "object",
+      "required": ["origin_raw", "destination_raw", "unit"],
+      "properties": {
+        "origin_raw": {"type": "string"},
+        "destination_raw": {"type": "string"},
+        "container_type_raw": {"type": "string", "description": "required unless explode is set"},
+        "price_raw": {"type": "string", "description": "required unless explode is set"},
+        "currency": {"type": "string"},
+        "currency_const": {"type": "string", "description": "literal currency when the feed has no column"},
+        "unit": {"enum": ["per_container", "per_teu"]},
+        "valid_from_raw": {"type": "string"},
+        "valid_to_raw": {"type": "string"},
+        "surcharges": {
+          "type": "array",
+          "items": {"type": "object", "required": ["name", "column"], "properties": {"name": {"type": "string"}, "column": {"type": "string"}}}
+        }
+      }
+    },
+    "hints": {
+      "type": "object",
+      "properties": {
+        "decimal_style": {"enum": ["us", "eu", "plain"], "default": "us"},
+        "date_layout": {"type": "string", "description": "documentation only; Spark parses dates"}
+      }
+    },
+    "timeout": {"type": "string", "pattern": "^[0-9]+(ms|s|m)$", "default": "20s"},
+    "retry": {
+      "type": "object",
+      "properties": {
+        "max_attempts": {"type": "integer", "minimum": 1, "maximum": 10, "default": 4},
+        "base_backoff": {"type": "string", "default": "250ms"},
+        "max_backoff": {"type": "string", "default": "5s"}
+      }
+    },
+    "rate_limit_rps": {"type": "number", "minimum": 0}
+  }
+}

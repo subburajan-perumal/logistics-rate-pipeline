@@ -1,0 +1,18 @@
+{
+  "source_id": "meridian",
+  "carrier": "MERIDIAN",
+  "url": "${MOCKSOURCES_URL}/meridian/rates",
+  "format": "json",
+  "pagination": {"type": "page", "param": "page", "start": 1, "path": "next_page"},
+  "records_path": "items",
+  "columns": {
+    "origin_raw": "origin_locode", "destination_raw": "destination_locode",
+    "container_type_raw": "container_type", "price_raw": "rate",
+    "currency": "currency", "unit": "per_container",
+    "valid_from_raw": "valid_from", "valid_to_raw": "valid_to"
+  },
+  "hints": {"decimal_style": "plain", "date_layout": "2006-01-02"},
+  "timeout": "20s",
+  "retry": {"max_attempts": 4, "base_backoff": "250ms", "max_backoff": "5s"},
+  "rate_limit_rps": 20
+}
