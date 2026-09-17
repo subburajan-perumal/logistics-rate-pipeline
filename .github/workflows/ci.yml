@@ -111,7 +111,7 @@ jobs:
           kubectl create namespace rates
           kubectl -n rates create secret generic ingestd-secrets --from-literal=EVENTIDE_API_KEY=eventide-demo-key
           helm upgrade --install rates deploy/helm/rate-pipeline -n rates -f deploy/helm/rate-pipeline/values-kind.yaml \
-            --set ingestd.ingress.enabled=false --set mocksources.latencyScale=0.2 --wait --timeout 180s
+            --set ingestd.ingress.enabled=false --wait --timeout 180s
       - run: helm test rates -n rates --logs
       - run: bash tests/e2e/shutdown.sh rates
       - if: failure()
