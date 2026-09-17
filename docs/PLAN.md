@@ -922,10 +922,9 @@ numbers; leak profile empty.
 
 ### Phase 4 — Images, kind, raw manifests (2 sessions)
 
-- [x] (Dockerfile + CI job written; not built here — no Docker) `Dockerfile` per D-21; both images < 20 MB (recorded); CI `docker`
-      job builds them
-- [ ] `deploy/kind/cluster.yaml`, `make kind-up/kind-down`; ingress-nginx
-      up
+- [x] `Dockerfile` per D-21; both images < 20 MB — built and pushed by the CI `docker` job on 2026-09-17: `ingestd` 7.8 MB, `mocksources` 5.5 MB compressed (GHCR amd64 manifests; result file still to commit)
+- [~] `deploy/kind/cluster.yaml`, `make kind-up/kind-down`; ingress-nginx
+      up — cluster config proven by the CI `kind-e2e` job (kind 0.33, K8s 1.36.1, ingress disabled there); not yet run on the laptop
 - [ ] Raw manifests (before Helm) for every D-22 object applied by hand
       once, so each object is understood individually; `kubectl
       describe` outputs for the Deployment saved to `docs/` as a learning
@@ -938,11 +937,11 @@ recipes, Secret, PVC, Service, Ingress; a run completes via the Ingress.
 
 ### Phase 5 — Helm chart, in-cluster tests, CI e2e (2 sessions)
 
-- [x] (chart written; helm lint + template clean for both profiles; kubeconform/helm test need CI or kind) Chart per §9.3; `helm lint` + `kubeconform` in CI; `helm test`
-      passes on kind
-- [ ] Config-rollout test and graceful-shutdown test (§9.5) executed and
-      recorded with timestamps; `tests/e2e/shutdown.sh` scripted
-- [x] (job written; runs after the push) `kind-e2e` CI job green on `main`; GHCR images published
+- [x] Chart per §9.3; `helm lint` + `kubeconform` in CI; `helm test`
+      passes on kind (CI run 35255407983, 2026-09-17: Phase Succeeded, in-cluster run with records > 0)
+- [~] Config-rollout test and graceful-shutdown test (§9.5) executed and
+      recorded with timestamps; `tests/e2e/shutdown.sh` scripted — shutdown test PASS in CI 2026-09-17 (pod gone in 1 s, run `20260917T175531Z-3712e6` left no manifest/parts); config-rollout test still to do
+- [x] `kind-e2e` CI job green on `main` (2026-09-17, after three fixes — see Appendix A); GHCR images published
 - [ ] Raw manifests from Phase 4 deleted (chart is the source of truth)
 
 **Acceptance:** one `helm upgrade --install` deploys everything; `helm
@@ -1127,8 +1126,8 @@ URL, one STAR line per layer, links to the playbook and this plan.
       explanation), `goroutine_leaks = 0`, `shutdown_records_lost = 0`,
       `image_size_mb < 20`, `e2e_latency < 5 min`, `redshift_idempotent`
       pass, `cloud_cost_usd ≤ 10`
-- [ ] Repo public, CI green including `kind-e2e`, README shows the
-      numbers table with run ids
+- [~] Repo public, CI green including `kind-e2e` (both 2026-09-17); README shows the
+      numbers table with run ids — cloud numbers still missing
 - [ ] EKS destroyed, Redshift deleted, S3 lifecycle rules in place — the
       project's standing AWS cost is **$0**
 - [ ] Career Profile note written and passes the promotion checklist
@@ -1148,7 +1147,7 @@ URL, one STAR line per layer, links to the playbook and this plan.
 |---|---|---|---|---|---|
 | 2026-09-17 | Windows | plan | Audited the machine (RAM, disk, WSL, toolchain, AWS CLI), the vault's roadmaps/interview notes, and current docs for Go 1.27, kind 0.33, Helm 4, PySpark 4.2, Databricks Free Edition, Redshift Serverless, EKS, AWS Free Tier, MinIO/LocalStack status; wrote this plan | Findings A1–A18; decisions D-01–D-38; no code, no installs | Phase 0 (evenings) once Project 1 is past Phase 8 |
 | 2026-09-17 | Windows (host toolchain, D-41) | 0–3, 6 built and tested; artifacts for 4, 5, 7, 8, 9, 10 written | Installed Go 1.27.0, Temurin 17.0.20, Helm 4.3.0, WinLibs gcc 16.1; wrote all Go packages + tests, `mocksources`, 8 recipes, the PySpark package + 25 tests, Dockerfile, kind config, Helm chart, CI workflow, Makefile, bootstrap scripts, Terraform, bundle, Redshift DDL/loader, README/architecture/sources/runbook docs | `go test -race ./...` clean (8 pkgs, goleak); fixture run 20 810 records, 8/8 sources; pool bench 6.85 s → 3.77 s (1.82×, D-40); parse profile −64 % allocs; Spark 20 810 → 2 294 rows, 66 rejects/7 reasons, 18 450 dedup, exact-count test green; `helm lint` + `helm template` clean for kind and EKS profiles. **Not run here:** Docker/kind/`helm test`/shutdown e2e (no Docker), GitHub push + CI (no `gh`), S3/EKS/Databricks/Redshift (dead AWS key, no accounts) | Phase 0 remainder: WSL + Docker, `gh repo create` + push, AWS key + budget + bucket; then Phases 4/5 on kind, 7–9 cloud, 10 on the Mac, 11 |
-| 2026-09-17 | Windows | 11.5 showcase + CI fix | Repo pushed public; GitHub Pages serving `docs/index.html`; Streamlit Community Cloud app `logistics-rate-pipeline` deployed from `demo/app.py` (two fixes: pyarrow ≥ 22 for Python 3.14, un-ignore `demo/data`); first public CI run red on `golangci-lint` → 13 errcheck / 2 gocritic / 1 ineffassign / 1 staticcheck fixed in code, `bodyclose` scoped out for the fake-response test file (D-50); CI badge on README and results page; `setup-java` v4 → v5 | https://subburajan-perumal.github.io/logistics-rate-pipeline/ live · https://logistics-rate-pipeline.streamlit.app live (20 810 / 2 294 / 18 450 / 66 shown) · `golangci-lint run` 0 issues · `go test -race ./...` clean | Phase 0 remainder unchanged (WSL + Docker, AWS key + budget + bucket); Grafana Cloud dashboard when Phase 4 runs on kind |
+| 2026-09-17 | Windows + GitHub Actions | 11.5 showcase + CI fix; **4/5 first executed in CI** | Repo pushed public; GitHub Pages serving `docs/index.html`; Streamlit Community Cloud app `logistics-rate-pipeline` deployed from `demo/app.py` (two fixes: pyarrow ≥ 22 for Python 3.14, un-ignore `demo/data`); first public CI run red on `golangci-lint` → 13 errcheck / 2 gocritic / 1 ineffassign / 1 staticcheck fixed in code, `bodyclose` scoped out for the fake-response test file (D-50); CI badge on README and results page; `setup-java` v4 → v5. With `go` green the `docker` and `kind-e2e` jobs ran for the first time: pinned kind v0.33.0 (action default 0.31 wrote v1beta3 kubeadm config), dropped `hook-succeeded` from the test pod so `helm test --logs` can read it, dropped the `latencyScale=0.2` override so the shutdown test deletes the pod mid-run deterministically | https://subburajan-perumal.github.io/logistics-rate-pipeline/ live · https://logistics-rate-pipeline.streamlit.app live (20 810 / 2 294 / 18 450 / 66 shown) · `golangci-lint run` 0 issues · `go test -race ./...` clean · **CI run 35255407983 all green**: images built and pushed to GHCR (`ingestd` 7.8 MB, `mocksources` 5.5 MB compressed, amd64), kind 0.33 / K8s 1.36.1 cluster up, `helm upgrade --wait` healthy, `helm test` Phase Succeeded (in-cluster run with records > 0), shutdown e2e PASS: pod gone in 1 s of a 60 s grace, interrupted run `20260917T175531Z-3712e6` left no manifest and no promoted parts | Phase 0 remainder unchanged (WSL + Docker locally, AWS key + budget + bucket); commit an image-size result file from the GHCR manifests so the results page can show it; peak-memory number from a kind run still open; Grafana Cloud dashboard when a kind run is done locally |
 
 ## Appendix B — Sources checked on 2026-09-17
 
